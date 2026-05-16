@@ -28,7 +28,7 @@ part of the interface name, such as `--interface "Focusrite"`.
 ## Play a 1000 Hz Sine Wave
 
 ```powershell
-poetry run python examples/sine_output.py --interface 2 --frequency 1000 --channels 0,1 --amplitude 0.2
+poetry run python examples/sine_output.py --interface 2 --frequency 1000 --channels 0,1 --amplitude 0.2 --phase-degrees 0
 ```
 
 Useful options:
@@ -37,8 +37,11 @@ Useful options:
 - `--channels`: comma-separated zero-based output channels
 - `--frequency`: sine frequency in Hz
 - `--amplitude`: linear amplitude from `0.0` to `1.0`
+- `--phase-degrees`: initial sine phase offset in degrees
 - `--block-words`: frames per callback block
 - `--seconds`: run duration; omit to run until `Ctrl+C`
+
+For example, `--phase-degrees 90` starts the sine wave at the positive peak.
 
 ## Measure Input Level in dBFS
 

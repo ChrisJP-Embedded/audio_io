@@ -33,6 +33,7 @@ class SineGenerator:
         sample_rate: int,
         channels: int,
         amplitude: float,
+        phase_degrees: float = 0.0,
     ) -> None:
         if not 0.0 <= amplitude <= 1.0:
             raise ValueError("amplitude must be between 0.0 and 1.0")
@@ -40,7 +41,7 @@ class SineGenerator:
         self.sample_rate = sample_rate
         self.channels = channels
         self.amplitude = amplitude
-        self._phase = 0.0
+        self._phase = math.radians(phase_degrees) % (2.0 * math.pi)
 
     def __call__(self, frames: int, info: object) -> np.ndarray:
         phase_step = 2.0 * math.pi * self.frequency_hz / self.sample_rate
@@ -57,6 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--channels", default="0,1", help="Comma-separated zero-based output channels.")
     parser.add_argument("--frequency", type=float, default=1000.0, help="Sine frequency in Hz.")
     parser.add_argument("--amplitude", type=float, default=0.2, help="Linear amplitude from 0.0 to 1.0.")
+    parser.add_argument("--phase-degrees", type=float, default=0.0, help="Initial sine phase offset in degrees.")
     parser.add_argument("--sample-rate", type=int, default=48_000, help="Sample rate in Hz.")
     parser.add_argument("--block-words", type=int, default=256, help="Frames per callback block.")
     parser.add_argument("--seconds", type=float, default=None, help="Run duration. Omit to run until Ctrl+C.")
@@ -82,9 +84,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         sample_rate=args.sample_rate,
         channels=config.output_channel_count,
         amplitude=args.amplitude,
+        phase_degrees=args.phase_degrees,
     )
 
-    print(f"Playing {args.frequency:g} Hz on channels {output_channels}. Press Ctrl+C to stop.")
+    print(
+        f"Playing {args.frequency:g} Hz at {args.phase_degrees:g} degrees "
+        f"on channels {output_channels}. Press Ctrl+C to stop."
+    )
     try:
         with AudioIOSession(config, output_callback=generator):
             if args.seconds is None:

@@ -96,7 +96,7 @@ poetry run python examples/list_devices.py
 Play a 1000 Hz sine wave on output channels 0 and 1:
 
 ```powershell
-poetry run python examples/sine_output.py --interface 2 --frequency 1000 --channels 0,1 --amplitude 0.2
+poetry run python examples/sine_output.py --interface 2 --frequency 1000 --channels 0,1 --amplitude 0.2 --phase-degrees 0
 ```
 
 Measure RMS input level in dBFS on input channel 0:
@@ -113,6 +113,10 @@ the interface indices or names reported by your machine:
 poetry run python examples/sine_output.py --interface "Focusrite" --channels 0,1
 poetry run python examples/input_level_meter.py --interface 2 --channels 0 --block-words 1024
 ```
+
+The sine example accepts `--phase-degrees` to apply an initial phase offset to
+the generated waveform. For example, `--phase-degrees 90` starts the tone at the
+positive peak.
 
 The examples run through the same package API on Windows and macOS. On macOS,
 you may need to grant microphone permission to the terminal or IDE before input

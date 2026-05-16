@@ -1,8 +1,19 @@
 # Version
 
-Current package version: `0.1.1`
+Current package version: `0.1.2`
 
 The source of truth for the package version is `pyproject.toml`.
+
+## 0.1.2
+
+Sine example refinement release.
+
+Included:
+
+- `--phase-degrees` option for the sine output example
+- `SineGenerator` support for initial phase offset
+- VS Code sine task prompt for phase offset
+- docs and tests for phase-shifted sine generation
 
 ## 0.1.1
 
@@ -44,7 +55,7 @@ Before tagging a release:
 1. Update `pyproject.toml`.
 2. Update this file.
 3. Update `README.md` and `USAGE.md` if behavior or examples changed.
-4. Run `python -m pytest`.
+4. Run `poetry run python -m pytest`.
 5. Run the VS Code `clean: python caches` task or equivalent cache cleanup.
 6. Commit changes.
 7. Tag with `git tag vX.Y.Z`.

@@ -21,6 +21,20 @@ def test_sine_generator_outputs_expected_shape_and_amplitude() -> None:
     assert block[:, 0].tolist() == block[:, 1].tolist()
 
 
+def test_sine_generator_applies_initial_phase_shift() -> None:
+    generator = SineGenerator(
+        frequency_hz=1000,
+        sample_rate=48000,
+        channels=1,
+        amplitude=0.5,
+        phase_degrees=90,
+    )
+
+    block = generator(frames=1, info=None)
+
+    assert block[0, 0] == np.float32(0.5)
+
+
 def test_rms_dbfs_reports_full_scale_and_silence_floor() -> None:
     block = np.array([[1.0, 0.0], [-1.0, 0.0]], dtype=np.float32)
 

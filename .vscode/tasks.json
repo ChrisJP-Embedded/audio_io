@@ -28,7 +28,9 @@
         "--channels",
         "0,1",
         "--amplitude",
-        "0.2"
+        "0.2",
+        "--phase-degrees",
+        "${input:sinePhaseDegrees}"
       ],
       "group": "build",
       "isBackground": true,
@@ -94,6 +96,12 @@
       "id": "inputInterface",
       "type": "promptString",
       "description": "Input interface name substring or index",
+      "default": "0"
+    },
+    {
+      "id": "sinePhaseDegrees",
+      "type": "promptString",
+      "description": "Initial sine phase offset in degrees",
       "default": "0"
     }
   ]
