@@ -1,8 +1,21 @@
 # Version
 
-Current package version: `0.1.2`
+Current package version: `0.1.3`
 
 The source of truth for the package version is `pyproject.toml`.
+
+## 0.1.3
+
+Loopback level-check example release.
+
+Included:
+
+- `examples/loopback_sine_level_check.py`
+- known peak dBFS sine generation for loopback checks
+- input sine peak estimation that is independent of signal phase
+- pass/fail tolerance checks in dB
+- VS Code task for loopback level checks
+- docs and tests for the level-check math
 
 ## 0.1.2
 

@@ -105,6 +105,13 @@ Measure RMS input level in dBFS on input channel 0:
 poetry run python examples/input_level_meter.py --interface 0 --channels 0
 ```
 
+Generate a known-level sine and verify the measured input level is present
+within tolerance:
+
+```powershell
+poetry run python examples/loopback_sine_level_check.py --interface 2 --output-channels 0,1 --input-channels 0 --sine-dbfs -12 --tolerance-db 1
+```
+
 Both examples accept `--interface`, which can be a device name substring or a
 numeric device index from `examples/list_devices.py`. Replace `0` and `2` with
 the interface indices or names reported by your machine:

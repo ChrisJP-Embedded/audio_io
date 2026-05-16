@@ -55,6 +55,27 @@ format, `0 dBFS` is full scale and quieter signals are negative values.
 On macOS, grant microphone permission to the terminal or IDE if the input meter
 does not receive samples.
 
+## Check Loopback Sine Level
+
+```powershell
+poetry run python examples/loopback_sine_level_check.py --interface 2 --output-channels 0,1 --input-channels 0 --sine-dbfs -12 --tolerance-db 1
+```
+
+This plays a sine wave at a known peak dBFS level and measures the selected
+input channels. The example exits with `0` when every measured input channel is
+within `--tolerance-db` of `--sine-dbfs`; otherwise it exits with `1`.
+
+Useful options:
+
+- `--interface`: full-duplex interface index or name substring
+- `--output-channels`: comma-separated zero-based output channels to drive
+- `--input-channels`: comma-separated zero-based input channels to verify
+- `--sine-dbfs`: generated sine peak level in dBFS
+- `--tolerance-db`: allowed input level error in dB
+- `--frequency`: sine frequency in Hz
+- `--settle-seconds`: warm-up time before measurement
+- `--measure-seconds`: capture duration used for the level estimate
+
 ## Use Callbacks
 
 ```python
@@ -130,5 +151,6 @@ The repo includes `.vscode/tasks.json` with:
 - `example: list devices`
 - `example: 1000 Hz sine output`
 - `example: input dB meter`
+- `example: loopback sine level check`
 - `test: pytest`
 - `clean: python caches`

@@ -54,6 +54,28 @@
       "problemMatcher": []
     },
     {
+      "label": "example: loopback sine level check",
+      "type": "shell",
+      "command": "poetry",
+      "args": [
+        "run",
+        "python",
+        "examples/loopback_sine_level_check.py",
+        "--interface",
+        "${input:loopbackInterface}",
+        "--input-channels",
+        "${input:loopbackInputChannels}",
+        "--output-channels",
+        "${input:loopbackOutputChannels}",
+        "--sine-dbfs",
+        "${input:loopbackSineDbfs}",
+        "--tolerance-db",
+        "${input:loopbackToleranceDb}"
+      ],
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
       "label": "test: pytest",
       "type": "shell",
       "command": "poetry",
@@ -103,6 +125,36 @@
       "type": "promptString",
       "description": "Initial sine phase offset in degrees",
       "default": "0"
+    },
+    {
+      "id": "loopbackInterface",
+      "type": "promptString",
+      "description": "Loopback interface name substring or index",
+      "default": "2"
+    },
+    {
+      "id": "loopbackInputChannels",
+      "type": "promptString",
+      "description": "Loopback input channels",
+      "default": "0"
+    },
+    {
+      "id": "loopbackOutputChannels",
+      "type": "promptString",
+      "description": "Loopback output channels",
+      "default": "0,1"
+    },
+    {
+      "id": "loopbackSineDbfs",
+      "type": "promptString",
+      "description": "Generated sine peak level in dBFS",
+      "default": "-12"
+    },
+    {
+      "id": "loopbackToleranceDb",
+      "type": "promptString",
+      "description": "Allowed level error in dB",
+      "default": "1"
     }
   ]
 }
