@@ -40,9 +40,9 @@ def on_output(frame_count, info):
     return None  # Silence for this block.
 
 config = AudioIOConfig(
-    device="Focusrite USB",
-    input_channels=(0, 1),
-    output_channels=(0, 1),
+    interface="Focusrite USB",
+    input_channels=[0, 1],
+    output_channels=[0, 1],
     sample_rate=48_000,
     block_words=256,
 )
@@ -52,8 +52,12 @@ with AudioIOSession(config, input_callback=on_input, output_callback=on_output) 
 ```
 
 Channel selections are zero-based and compacted for the caller. For example,
-`output_channels=(0, 2)` lets the caller write two-column output blocks; the
+`output_channels=[0, 2]` lets the caller write two-column output blocks; the
 backend routes those columns to hardware channels 1 and 3.
+
+At startup, the backend validates the named interface and requested input/output
+channel lists. Invalid requests raise `InterfaceNotFoundError` or
+`InvalidChannelRequestError` with a message that names the failing side.
 
 ## Queue usage
 
@@ -61,9 +65,9 @@ backend routes those columns to hardware channels 1 and 3.
 from audio_io import AudioIOConfig, AudioIOSession
 
 config = AudioIOConfig(
-    device="Built-in Audio",
-    input_channels=(0,),
-    output_channels=(0, 1),
+    interface="Built-in Audio",
+    input_channels=[0],
+    output_channels=[0, 1],
     block_words=512,
 )
 
@@ -92,21 +96,22 @@ poetry run python examples/list_devices.py
 Play a 1000 Hz sine wave on output channels 0 and 1:
 
 ```powershell
-poetry run python examples/sine_output.py --frequency 1000 --channels 0,1 --amplitude 0.2
+poetry run python examples/sine_output.py --interface 2 --frequency 1000 --channels 0,1 --amplitude 0.2
 ```
 
 Measure RMS input level in dBFS on input channel 0:
 
 ```powershell
-poetry run python examples/input_level_meter.py --channels 0
+poetry run python examples/input_level_meter.py --interface 0 --channels 0
 ```
 
-Both examples accept `--device`, which can be a device name substring or a
-numeric device index from `examples/list_devices.py`:
+Both examples accept `--interface`, which can be a device name substring or a
+numeric device index from `examples/list_devices.py`. Replace `0` and `2` with
+the interface indices or names reported by your machine:
 
 ```powershell
-poetry run python examples/sine_output.py --device "Focusrite" --channels 0,1
-poetry run python examples/input_level_meter.py --device 2 --channels 0 --block-words 1024
+poetry run python examples/sine_output.py --interface "Focusrite" --channels 0,1
+poetry run python examples/input_level_meter.py --interface 2 --channels 0 --block-words 1024
 ```
 
 The examples run through the same package API on Windows and macOS. On macOS,

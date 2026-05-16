@@ -22,18 +22,18 @@ poetry run python examples/list_devices.py
 poetry run python examples/list_devices.py
 ```
 
-The printed device index can be passed as `--device 2`, or you can pass part of
-the device name, such as `--device "Focusrite"`.
+The printed interface index can be passed as `--interface 2`, or you can pass
+part of the interface name, such as `--interface "Focusrite"`.
 
 ## Play a 1000 Hz Sine Wave
 
 ```powershell
-poetry run python examples/sine_output.py --frequency 1000 --channels 0,1 --amplitude 0.2
+poetry run python examples/sine_output.py --interface 2 --frequency 1000 --channels 0,1 --amplitude 0.2
 ```
 
 Useful options:
 
-- `--device`: device index or name substring
+- `--interface`: interface index or name substring
 - `--channels`: comma-separated zero-based output channels
 - `--frequency`: sine frequency in Hz
 - `--amplitude`: linear amplitude from `0.0` to `1.0`
@@ -43,7 +43,7 @@ Useful options:
 ## Measure Input Level in dBFS
 
 ```powershell
-poetry run python examples/input_level_meter.py --channels 0
+poetry run python examples/input_level_meter.py --interface 0 --channels 0
 ```
 
 The meter reports RMS level per selected channel. With the default float audio
@@ -67,9 +67,9 @@ def on_output(frame_count, info):
 
 
 config = AudioIOConfig(
-    device="Built-in",
-    input_channels=(0,),
-    output_channels=(0, 1),
+    interface="Built-in",
+    input_channels=[0],
+    output_channels=[0, 1],
     sample_rate=48_000,
     block_words=256,
 )
@@ -86,8 +86,9 @@ Returning `None` from an output callback renders silence for that block.
 from audio_io import AudioIOConfig, AudioIOSession
 
 config = AudioIOConfig(
-    input_channels=(0,),
-    output_channels=(0, 1),
+    interface="Built-in",
+    input_channels=[0],
+    output_channels=[0, 1],
     block_words=512,
 )
 
@@ -100,11 +101,24 @@ If no output block is queued in time, silence is rendered.
 
 ## Channel Selection
 
-Channels are zero-based logical device channels. The caller always sees compact
+Channels are zero-based logical interface channels. The caller always sees compact
 blocks shaped as `(frames, selected_channels)`.
 
-For example, `output_channels=(0, 2)` means the caller writes two-column blocks,
+For example, `output_channels=[0, 2]` means the caller writes two-column blocks,
 and the backend routes those columns to hardware channels 1 and 3.
+
+`input_channels` and `output_channels` should be lists or other sequences with
+one or more entries when that side of the interface is used:
+
+```python
+AudioIOConfig(interface="Focusrite", input_channels=[0], output_channels=[0, 1])
+```
+
+The session validates the named interface and channel lists before opening the
+stream. Bad interface names raise `InterfaceNotFoundError`. Channel requests
+outside the available input/output range raise `InvalidChannelRequestError`, and
+the error message names the failing side, such as `input channel request
+invalid` or `output channel request invalid`.
 
 ## VS Code Tasks
 

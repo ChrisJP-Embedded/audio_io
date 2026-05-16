@@ -52,7 +52,8 @@ class SineGenerator:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Play a continuous sine wave.")
-    parser.add_argument("--device", default=None, help="Device name substring or numeric device index.")
+    parser.add_argument("--interface", default=None, help="Interface name substring or numeric device index.")
+    parser.add_argument("--device", default=None, help="Deprecated alias for --interface.")
     parser.add_argument("--channels", default="0,1", help="Comma-separated zero-based output channels.")
     parser.add_argument("--frequency", type=float, default=1000.0, help="Sine frequency in Hz.")
     parser.add_argument("--amplitude", type=float, default=0.2, help="Linear amplitude from 0.0 to 1.0.")
@@ -65,10 +66,13 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     output_channels = parse_channels(args.channels)
-    device = int(args.device) if args.device and args.device.isdigit() else args.device
+    interface_arg = args.interface if args.interface is not None else args.device
+    if interface_arg is None:
+        build_parser().error("--interface is required")
+    interface = int(interface_arg) if interface_arg and interface_arg.isdigit() else interface_arg
 
     config = AudioIOConfig(
-        device=device,
+        interface=interface,
         output_channels=output_channels,
         sample_rate=args.sample_rate,
         block_words=args.block_words,

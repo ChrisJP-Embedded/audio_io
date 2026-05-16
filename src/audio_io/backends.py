@@ -23,6 +23,18 @@ class DeviceInfo:
     default_sample_rate: float
 
 
+class AudioIOConfigError(ValueError):
+    """Raised when a requested interface or channel layout is invalid."""
+
+
+class InterfaceNotFoundError(AudioIOConfigError):
+    """Raised when an interface name or index cannot be resolved."""
+
+
+class InvalidChannelRequestError(AudioIOConfigError):
+    """Raised when a channel list is incompatible with an interface."""
+
+
 class StreamHandle(Protocol):
     def start(self) -> None:
         ...
@@ -60,7 +72,8 @@ class SoundDeviceBackend:
         self._sd = sd
 
     def open_stream(self, config: AudioIOConfig, callback: StreamCallback) -> StreamHandle:
-        device = self._resolve_device(config.device)
+        device_info = resolve_interface(self.list_devices(), config.interface)
+        validate_channel_request(config, device_info)
         input_channel_span = _channel_span(config.input_channels)
         output_channel_span = _channel_span(config.output_channels)
 
@@ -68,7 +81,7 @@ class SoundDeviceBackend:
             "samplerate": config.sample_rate,
             "blocksize": config.block_words,
             "dtype": config.dtype,
-            "device": device,
+            "device": device_info.index,
         }
 
         if config.input_channel_count and config.output_channel_count:
@@ -89,7 +102,7 @@ class SoundDeviceBackend:
                 channels=output_channel_span,
                 callback=_output_callback(config, callback),
             )
-        raise ValueError("At least one input or output channel must be configured")
+        raise AudioIOConfigError("at least one input or output channel must be configured")
 
     def list_devices(self) -> list[DeviceInfo]:
         devices = self._sd.query_devices()
@@ -104,22 +117,65 @@ class SoundDeviceBackend:
             for index, device in enumerate(devices)
         ]
 
-    def _resolve_device(self, device: str | int | None) -> str | int | None:
-        if not isinstance(device, str):
-            return device
-
-        matches = [info for info in self.list_devices() if device.lower() in info.name.lower()]
-        if not matches:
-            raise ValueError(f"No audio device matched {device!r}")
-        if len(matches) > 1:
-            names = ", ".join(match.name for match in matches[:5])
-            raise ValueError(f"Device name {device!r} matched multiple devices: {names}")
-        return matches[0].index
-
 
 def list_devices(backend: AudioBackend | None = None) -> list[DeviceInfo]:
     selected_backend = backend or SoundDeviceBackend()
     return selected_backend.list_devices()
+
+
+def resolve_interface(devices: list[DeviceInfo], interface: str | int | None) -> DeviceInfo:
+    if not devices:
+        raise InterfaceNotFoundError("No audio interfaces are available")
+
+    if interface is None:
+        raise InterfaceNotFoundError("audio interface must be named with AudioIOConfig.interface")
+
+    if isinstance(interface, int):
+        for device in devices:
+            if device.index == interface:
+                return device
+        raise InterfaceNotFoundError(f"No audio interface has index {interface}")
+
+    matches = [info for info in devices if interface.lower() in info.name.lower()]
+    if not matches:
+        raise InterfaceNotFoundError(f"No audio interface matched {interface!r}")
+    if len(matches) > 1:
+        names = ", ".join(match.name for match in matches[:5])
+        raise InterfaceNotFoundError(f"Audio interface name {interface!r} matched multiple interfaces: {names}")
+    return matches[0]
+
+
+def validate_channel_request(config: AudioIOConfig, interface: DeviceInfo) -> None:
+    _validate_channel_list(
+        side="input",
+        channels=config.input_channels,
+        available=interface.max_input_channels,
+        interface=interface,
+    )
+    _validate_channel_list(
+        side="output",
+        channels=config.output_channels,
+        available=interface.max_output_channels,
+        interface=interface,
+    )
+
+
+def _validate_channel_list(
+    *,
+    side: str,
+    channels: tuple[int, ...],
+    available: int,
+    interface: DeviceInfo,
+) -> None:
+    if not channels:
+        return
+    invalid = [channel for channel in channels if channel >= available]
+    if invalid:
+        raise InvalidChannelRequestError(
+            f"{side} channel request invalid for {side} channel list {list(channels)!r}: "
+            f"interface {interface.name!r} has {available} {side} channel(s); "
+            f"invalid channel(s): {invalid!r}"
+        )
 
 
 def _channel_span(channels: tuple[int, ...]) -> int:

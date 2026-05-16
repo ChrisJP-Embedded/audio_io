@@ -5,7 +5,7 @@ from typing import Callable
 
 import numpy as np
 
-from audio_io.backends import DeviceInfo
+from audio_io.backends import DeviceInfo, resolve_interface, validate_channel_request
 from audio_io.config import AudioIOConfig
 
 
@@ -38,6 +38,8 @@ class FakeBackend:
         self.stream: FakeStream | None = None
 
     def open_stream(self, config: AudioIOConfig, callback: Callable) -> FakeStream:
+        interface = resolve_interface(self.list_devices(), config.interface)
+        validate_channel_request(config, interface)
         self.stream = FakeStream(callback=callback, config=config)
         return self.stream
 

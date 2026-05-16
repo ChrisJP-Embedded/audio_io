@@ -36,7 +36,8 @@ def rms_dbfs(block: np.ndarray, *, floor_db: float = -120.0) -> np.ndarray:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Show input RMS level in dBFS.")
-    parser.add_argument("--device", default=None, help="Device name substring or numeric device index.")
+    parser.add_argument("--interface", default=None, help="Interface name substring or numeric device index.")
+    parser.add_argument("--device", default=None, help="Deprecated alias for --interface.")
     parser.add_argument("--channels", default="0", help="Comma-separated zero-based input channels.")
     parser.add_argument("--sample-rate", type=int, default=48_000, help="Sample rate in Hz.")
     parser.add_argument("--block-words", type=int, default=1024, help="Frames per callback block.")
@@ -47,9 +48,12 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     input_channels = parse_channels(args.channels)
-    device = int(args.device) if args.device and args.device.isdigit() else args.device
+    interface_arg = args.interface if args.interface is not None else args.device
+    if interface_arg is None:
+        build_parser().error("--interface is required")
+    interface = int(interface_arg) if interface_arg and interface_arg.isdigit() else interface_arg
     config = AudioIOConfig(
-        device=device,
+        interface=interface,
         input_channels=input_channels,
         sample_rate=args.sample_rate,
         block_words=args.block_words,

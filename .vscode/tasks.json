@@ -21,6 +21,8 @@
         "run",
         "python",
         "examples/sine_output.py",
+        "--interface",
+        "${input:outputInterface}",
         "--frequency",
         "1000",
         "--channels",
@@ -40,6 +42,8 @@
         "run",
         "python",
         "examples/input_level_meter.py",
+        "--interface",
+        "${input:inputInterface}",
         "--channels",
         "0"
       ],
@@ -77,6 +81,20 @@
         "command": "find . \\( -name __pycache__ -o -name .pytest_cache -o -name .ruff_cache -o -name .mypy_cache -o -name .cache -o -name cache -o -name build -o -name dist -o -name '*.egg-info' \\) -type d -prune -exec rm -rf {} +; find . \\( -name '*.pyc' -o -name '*.pyo' -o -name .coverage \\) -type f -delete"
       },
       "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "outputInterface",
+      "type": "promptString",
+      "description": "Output interface name substring or index",
+      "default": "2"
+    },
+    {
+      "id": "inputInterface",
+      "type": "promptString",
+      "description": "Input interface name substring or index",
+      "default": "0"
     }
   ]
 }

@@ -1,8 +1,23 @@
 # Version
 
-Current package version: `0.1.0`
+Current package version: `0.1.1`
 
 The source of truth for the package version is `pyproject.toml`.
+
+## 0.1.1
+
+API refinement release.
+
+Included:
+
+- `AudioIOConfig.interface` as the primary interface selector
+- list-style `input_channels` and `output_channels`
+- startup validation for unknown interfaces
+- startup validation for invalid input channel requests
+- startup validation for invalid output channel requests
+- `InterfaceNotFoundError` and `InvalidChannelRequestError`
+- examples updated to prefer `--interface`
+- docs updated for interface/channel validation behavior
 
 ## 0.1.0
 
