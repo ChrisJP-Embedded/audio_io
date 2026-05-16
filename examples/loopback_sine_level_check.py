@@ -10,15 +10,15 @@ from collections.abc import Sequence
 import numpy as np
 
 try:
-    from _example_bootstrap import add_src_to_path, print_runtime_error
+    from _example_bootstrap import add_src_to_path, print_config_error, print_runtime_error
     from sine_output import SineGenerator, parse_channels
 except ImportError:
-    from examples._example_bootstrap import add_src_to_path, print_runtime_error
+    from examples._example_bootstrap import add_src_to_path, print_config_error, print_runtime_error
     from examples.sine_output import SineGenerator, parse_channels
 
 add_src_to_path()
 
-from audio_io import AudioIOConfig, AudioIOSession  # noqa: E402
+from audio_io import AudioIOConfig, AudioIOConfigError, AudioIOSession  # noqa: E402
 
 
 def dbfs_to_peak(dbfs: float) -> float:
@@ -102,6 +102,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             deadline = time.monotonic() + args.measure_seconds
             while time.monotonic() < deadline:
                 blocks.append(session.read_input_block(timeout=1.0))
+    except AudioIOConfigError as exc:
+        return print_config_error(exc)
     except RuntimeError as exc:
         return print_runtime_error(exc)
 

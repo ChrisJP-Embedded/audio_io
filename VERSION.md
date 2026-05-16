@@ -1,8 +1,18 @@
 # Version
 
-Current package version: `0.1.3`
+Current package version: `0.1.4`
 
 The source of truth for the package version is `pyproject.toml`.
+
+## 0.1.4
+
+Example error-handling release.
+
+Included:
+
+- examples catch `AudioIOConfigError` without printing tracebacks
+- invalid interface/channel requests now produce one-line CLI errors
+- tests covering example CLI config-error paths
 
 ## 0.1.3
 

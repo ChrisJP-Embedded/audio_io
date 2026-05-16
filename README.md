@@ -58,6 +58,7 @@ backend routes those columns to hardware channels 1 and 3.
 At startup, the backend validates the named interface and requested input/output
 channel lists. Invalid requests raise `InterfaceNotFoundError` or
 `InvalidChannelRequestError` with a message that names the failing side.
+The example CLIs catch these errors and print a short `error:` message.
 
 ## Queue usage
 

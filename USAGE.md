@@ -144,6 +144,9 @@ outside the available input/output range raise `InvalidChannelRequestError`, and
 the error message names the failing side, such as `input channel request
 invalid` or `output channel request invalid`.
 
+The example applications catch these configuration errors and return exit code
+`1` after printing a short `error:` message.
+
 ## VS Code Tasks
 
 The repo includes `.vscode/tasks.json` with:

@@ -1,7 +1,12 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
+import examples.input_level_meter as input_level_meter
+import examples.loopback_sine_level_check as loopback_sine_level_check
+import examples.sine_output as sine_output
+from audio_io import InvalidChannelRequestError
 from examples.input_level_meter import rms_dbfs
 from examples.loopback_sine_level_check import dbfs_to_peak, estimate_sine_peak_dbfs, levels_within_tolerance
 from examples.sine_output import SineGenerator, parse_channels
@@ -77,3 +82,48 @@ def test_levels_within_tolerance() -> None:
     passed = levels_within_tolerance(measured, expected_dbfs=-12.0, tolerance_db=1.0)
 
     assert passed.tolist() == [True, False, False]
+
+
+class RaisingSession:
+    def __init__(self, config, **kwargs):
+        raise InvalidChannelRequestError(
+            "input channel request invalid for input channel list [2]: "
+            "interface 'Output Only' has 0 input channel(s); invalid channel(s): [2]"
+        )
+
+
+@pytest.mark.parametrize(
+    ("module", "argv"),
+    [
+        (
+            sine_output,
+            ["--interface", "Output Only", "--channels", "2", "--seconds", "0"],
+        ),
+        (
+            input_level_meter,
+            ["--interface", "Output Only", "--channels", "2", "--seconds", "0"],
+        ),
+        (
+            loopback_sine_level_check,
+            [
+                "--interface",
+                "Output Only",
+                "--input-channels",
+                "2",
+                "--output-channels",
+                "0,1",
+                "--measure-seconds",
+                "0",
+            ],
+        ),
+    ],
+)
+def test_examples_print_config_errors_without_traceback(monkeypatch, capsys, module, argv) -> None:
+    monkeypatch.setattr(module, "AudioIOSession", RaisingSession)
+
+    exit_code = module.main(argv)
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "input channel request invalid for input channel list [2]" in captured.err
+    assert "Traceback" not in captured.err
