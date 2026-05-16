@@ -7,20 +7,19 @@ PortAudio.
 ## Install for Development
 
 ```powershell
-python -m pip install -e ".[dev]"
+poetry install
 ```
 
-In a restricted environment where pip cannot download build tools, use the
-installed build backend:
+Run commands inside the Poetry environment:
 
 ```powershell
-python -m pip install --no-build-isolation -e ".[dev]"
+poetry run python examples/list_devices.py
 ```
 
 ## List Devices
 
 ```powershell
-python examples/list_devices.py
+poetry run python examples/list_devices.py
 ```
 
 The printed device index can be passed as `--device 2`, or you can pass part of
@@ -29,7 +28,7 @@ the device name, such as `--device "Focusrite"`.
 ## Play a 1000 Hz Sine Wave
 
 ```powershell
-python examples/sine_output.py --frequency 1000 --channels 0,1 --amplitude 0.2
+poetry run python examples/sine_output.py --frequency 1000 --channels 0,1 --amplitude 0.2
 ```
 
 Useful options:
@@ -44,7 +43,7 @@ Useful options:
 ## Measure Input Level in dBFS
 
 ```powershell
-python examples/input_level_meter.py --channels 0
+poetry run python examples/input_level_meter.py --channels 0
 ```
 
 The meter reports RMS level per selected channel. With the default float audio

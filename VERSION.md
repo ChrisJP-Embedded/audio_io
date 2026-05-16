@@ -20,8 +20,7 @@ Included:
 - example apps for listing devices, playing a 1000 Hz sine wave, and measuring
   input RMS level in dBFS
 - VS Code tasks for examples, tests, and cache cleanup
-- setuptools build backend to reduce packaging friction in local editable
-  installs
+- Poetry dependency and virtual-environment workflow
 
 ## Release Checklist
 

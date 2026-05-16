@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=68"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "audio-io"
@@ -8,22 +8,24 @@ version = "0.1.0"
 description = "Small Python package for callback and buffer based audio I/O sessions."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = "MIT"
 authors = [
-  { name = "audio-io contributors" }
+  { name = "audio-io contributors" },
 ]
 dependencies = [
   "numpy>=1.23",
-  "sounddevice>=0.4.6"
+  "sounddevice>=0.4.6",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
-  "pytest>=8.0"
+  "pytest>=8.0",
 ]
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.poetry]
+packages = [
+  { include = "audio_io", from = "src" },
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

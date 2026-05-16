@@ -15,5 +15,5 @@ def add_src_to_path() -> None:
 
 def print_runtime_error(exc: RuntimeError) -> int:
     print(f"error: {exc}", file=sys.stderr)
-    print('hint: run python -m pip install -e ".[dev]" from the repo root', file=sys.stderr)
+    print("hint: run poetry install from the repo root, then use poetry run", file=sys.stderr)
     return 1

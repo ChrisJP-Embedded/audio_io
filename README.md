@@ -18,13 +18,13 @@ for release notes.
 ## Install
 
 ```powershell
-python -m pip install -e ".[dev]"
+poetry install
 ```
 
-If build isolation cannot download build tools in a restricted environment, use:
+Run commands inside the Poetry environment:
 
 ```powershell
-python -m pip install --no-build-isolation -e ".[dev]"
+poetry run python examples/list_devices.py
 ```
 
 ## Callback usage
@@ -84,7 +84,7 @@ for device in list_devices():
 From the command line:
 
 ```powershell
-python examples/list_devices.py
+poetry run python examples/list_devices.py
 ```
 
 ## Example Apps
@@ -92,21 +92,21 @@ python examples/list_devices.py
 Play a 1000 Hz sine wave on output channels 0 and 1:
 
 ```powershell
-python examples/sine_output.py --frequency 1000 --channels 0,1 --amplitude 0.2
+poetry run python examples/sine_output.py --frequency 1000 --channels 0,1 --amplitude 0.2
 ```
 
 Measure RMS input level in dBFS on input channel 0:
 
 ```powershell
-python examples/input_level_meter.py --channels 0
+poetry run python examples/input_level_meter.py --channels 0
 ```
 
 Both examples accept `--device`, which can be a device name substring or a
 numeric device index from `examples/list_devices.py`:
 
 ```powershell
-python examples/sine_output.py --device "Focusrite" --channels 0,1
-python examples/input_level_meter.py --device 2 --channels 0 --block-words 1024
+poetry run python examples/sine_output.py --device "Focusrite" --channels 0,1
+poetry run python examples/input_level_meter.py --device 2 --channels 0 --block-words 1024
 ```
 
 The examples run through the same package API on Windows and macOS. On macOS,

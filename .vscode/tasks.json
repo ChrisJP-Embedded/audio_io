@@ -4,8 +4,10 @@
     {
       "label": "example: list devices",
       "type": "shell",
-      "command": "python",
+      "command": "poetry",
       "args": [
+        "run",
+        "python",
         "examples/list_devices.py"
       ],
       "group": "test",
@@ -14,8 +16,10 @@
     {
       "label": "example: 1000 Hz sine output",
       "type": "shell",
-      "command": "python",
+      "command": "poetry",
       "args": [
+        "run",
+        "python",
         "examples/sine_output.py",
         "--frequency",
         "1000",
@@ -31,8 +35,10 @@
     {
       "label": "example: input dB meter",
       "type": "shell",
-      "command": "python",
+      "command": "poetry",
       "args": [
+        "run",
+        "python",
         "examples/input_level_meter.py",
         "--channels",
         "0"
@@ -44,8 +50,10 @@
     {
       "label": "test: pytest",
       "type": "shell",
-      "command": "python",
+      "command": "poetry",
       "args": [
+        "run",
+        "python",
         "-m",
         "pytest"
       ],
