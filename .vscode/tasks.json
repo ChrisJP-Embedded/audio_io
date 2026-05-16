@@ -1,0 +1,74 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "example: list devices",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        "examples/list_devices.py"
+      ],
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "example: 1000 Hz sine output",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        "examples/sine_output.py",
+        "--frequency",
+        "1000",
+        "--channels",
+        "0,1",
+        "--amplitude",
+        "0.2"
+      ],
+      "group": "build",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "example: input dB meter",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        "examples/input_level_meter.py",
+        "--channels",
+        "0"
+      ],
+      "group": "test",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "test: pytest",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        "-m",
+        "pytest"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "clean: python caches",
+      "type": "shell",
+      "command": "Get-ChildItem -Force -Recurse -Directory -Include __pycache__,.pytest_cache,.ruff_cache,.mypy_cache,.cache,cache,build,dist,*.egg-info | Remove-Item -Recurse -Force; Get-ChildItem -Force -Recurse -File -Include *.pyc,*.pyo,.coverage | Remove-Item -Force",
+      "windows": {
+        "command": "Get-ChildItem -Force -Recurse -Directory -Include __pycache__,.pytest_cache,.ruff_cache,.mypy_cache,.cache,cache,build,dist,*.egg-info | Remove-Item -Recurse -Force; Get-ChildItem -Force -Recurse -File -Include *.pyc,*.pyo,.coverage | Remove-Item -Force"
+      },
+      "osx": {
+        "command": "find . \\( -name __pycache__ -o -name .pytest_cache -o -name .ruff_cache -o -name .mypy_cache -o -name .cache -o -name cache -o -name build -o -name dist -o -name '*.egg-info' \\) -type d -prune -exec rm -rf {} +; find . \\( -name '*.pyc' -o -name '*.pyo' -o -name .coverage \\) -type f -delete"
+      },
+      "linux": {
+        "command": "find . \\( -name __pycache__ -o -name .pytest_cache -o -name .ruff_cache -o -name .mypy_cache -o -name .cache -o -name cache -o -name build -o -name dist -o -name '*.egg-info' \\) -type d -prune -exec rm -rf {} +; find . \\( -name '*.pyc' -o -name '*.pyo' -o -name .coverage \\) -type f -delete"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

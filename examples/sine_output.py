@@ -1,0 +1,99 @@
+"""Play a continuous sine wave through an audio output device."""
+
+from __future__ import annotations
+
+import argparse
+import math
+import time
+from collections.abc import Sequence
+
+import numpy as np
+
+try:
+    from _example_bootstrap import add_src_to_path, print_runtime_error
+except ImportError:
+    from examples._example_bootstrap import add_src_to_path, print_runtime_error
+
+add_src_to_path()
+
+from audio_io import AudioIOConfig, AudioIOSession  # noqa: E402
+
+
+def parse_channels(value: str) -> tuple[int, ...]:
+    if not value.strip():
+        return ()
+    return tuple(int(part.strip()) for part in value.split(","))
+
+
+class SineGenerator:
+    def __init__(
+        self,
+        *,
+        frequency_hz: float,
+        sample_rate: int,
+        channels: int,
+        amplitude: float,
+    ) -> None:
+        if not 0.0 <= amplitude <= 1.0:
+            raise ValueError("amplitude must be between 0.0 and 1.0")
+        self.frequency_hz = frequency_hz
+        self.sample_rate = sample_rate
+        self.channels = channels
+        self.amplitude = amplitude
+        self._phase = 0.0
+
+    def __call__(self, frames: int, info: object) -> np.ndarray:
+        phase_step = 2.0 * math.pi * self.frequency_hz / self.sample_rate
+        phases = self._phase + phase_step * np.arange(frames, dtype=np.float32)
+        mono = (self.amplitude * np.sin(phases)).astype(np.float32)
+        self._phase = float((phases[-1] + phase_step) % (2.0 * math.pi))
+        return np.repeat(mono[:, np.newaxis], self.channels, axis=1)
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Play a continuous sine wave.")
+    parser.add_argument("--device", default=None, help="Device name substring or numeric device index.")
+    parser.add_argument("--channels", default="0,1", help="Comma-separated zero-based output channels.")
+    parser.add_argument("--frequency", type=float, default=1000.0, help="Sine frequency in Hz.")
+    parser.add_argument("--amplitude", type=float, default=0.2, help="Linear amplitude from 0.0 to 1.0.")
+    parser.add_argument("--sample-rate", type=int, default=48_000, help="Sample rate in Hz.")
+    parser.add_argument("--block-words", type=int, default=256, help="Frames per callback block.")
+    parser.add_argument("--seconds", type=float, default=None, help="Run duration. Omit to run until Ctrl+C.")
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    output_channels = parse_channels(args.channels)
+    device = int(args.device) if args.device and args.device.isdigit() else args.device
+
+    config = AudioIOConfig(
+        device=device,
+        output_channels=output_channels,
+        sample_rate=args.sample_rate,
+        block_words=args.block_words,
+    )
+    generator = SineGenerator(
+        frequency_hz=args.frequency,
+        sample_rate=args.sample_rate,
+        channels=config.output_channel_count,
+        amplitude=args.amplitude,
+    )
+
+    print(f"Playing {args.frequency:g} Hz on channels {output_channels}. Press Ctrl+C to stop.")
+    try:
+        with AudioIOSession(config, output_callback=generator):
+            if args.seconds is None:
+                while True:
+                    time.sleep(0.25)
+            else:
+                time.sleep(args.seconds)
+    except RuntimeError as exc:
+        return print_runtime_error(exc)
+    except KeyboardInterrupt:
+        print()
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
