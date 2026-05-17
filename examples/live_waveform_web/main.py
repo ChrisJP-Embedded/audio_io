@@ -14,16 +14,45 @@ import numpy as np
 
 try:
     from _example_bootstrap import add_src_to_path, print_config_error, print_runtime_error
-    from input_level_meter import rms_dbfs
-    from sine_output import parse_channels
 except ImportError:
-    from examples._example_bootstrap import add_src_to_path, print_config_error, print_runtime_error
-    from examples.input_level_meter import rms_dbfs
-    from examples.sine_output import parse_channels
+    try:
+        from examples._example_bootstrap import add_src_to_path, print_config_error, print_runtime_error
+    except ImportError:
+        import sys
+
+        def add_src_to_path() -> None:
+            return
+
+        def print_config_error(exc: Exception) -> int:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+
+        def print_runtime_error(exc: RuntimeError) -> int:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
 
 add_src_to_path()
 
 from audio_io import AudioIOConfig, AudioIOConfigError, AudioIOSession, BlockInfo  # noqa: E402
+
+
+def parse_channels(value: str) -> tuple[int, ...]:
+    """Parse comma-separated zero-based channel indices from the CLI."""
+
+    if not value.strip():
+        return ()
+    return tuple(int(part.strip()) for part in value.split(","))
+
+
+def rms_dbfs(block: np.ndarray, *, floor_db: float = -120.0) -> np.ndarray:
+    """Return per-channel RMS level in dBFS for a `(frames, channels)` block."""
+
+    if block.ndim != 2:
+        raise ValueError("block must be shaped as (frames, channels)")
+    rms = np.sqrt(np.mean(np.square(block.astype(np.float32)), axis=0))
+    with np.errstate(divide="ignore"):
+        db = 20.0 * np.log10(rms)
+    return np.maximum(db, floor_db)
 
 
 HTML_PAGE = """<!doctype html>

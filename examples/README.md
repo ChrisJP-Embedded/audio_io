@@ -5,17 +5,26 @@ Run them from the repository root through Poetry:
 
 ```powershell
 poetry install
-poetry run python examples/list_devices.py
+poetry run audio-io-list-devices
 ```
 
-Use `examples/list_devices.py` first to find the interface index or name to
+Each example lives in its own directory with a local `README.md`. The folders
+are intended to be easy starting points for a new app: copy the folder, keep the
+root `pyproject.toml` dependency set or add `audio-io` plus the same runtime
+dependencies to your app, then adapt `main.py`.
+
+This repository intentionally has only one Poetry project file at the root. The
+top-level `pyproject.toml` owns the package, all example dependencies, and the
+console scripts below.
+
+Use [list_devices](list_devices/README.md) first to find the interface index or name to
 pass to the other examples. Interface names can be exact names, substrings, or
 numeric device indices.
 
 ## List Devices
 
 ```powershell
-poetry run python examples/list_devices.py
+poetry run audio-io-list-devices
 ```
 
 Example output:
@@ -28,7 +37,7 @@ Example output:
 ## Play a Sine Wave
 
 ```powershell
-poetry run python examples/sine_output.py --interface 2 --frequency 1000 --channels 0,1 --amplitude 0.2 --seconds 5
+poetry run audio-io-sine-output --interface 2 --frequency 1000 --channels 0,1 --amplitude 0.2 --seconds 5
 ```
 
 Useful options:
@@ -43,7 +52,7 @@ Useful options:
 ## Measure Input Level
 
 ```powershell
-poetry run python examples/input_level_meter.py --interface 0 --channels 0 --block-words 1024
+poetry run audio-io-input-meter --interface 0 --channels 0 --block-words 1024
 ```
 
 The meter prints RMS level in dBFS for each selected input channel. With the
@@ -52,7 +61,7 @@ default float format, `0 dBFS` is full scale and quieter signals are negative.
 ## View a Live Waveform
 
 ```powershell
-poetry run python examples/live_waveform_web.py --interface 0 --channels 0
+poetry run audio-io-live-waveform --interface 0 --channels 0
 ```
 
 This starts a local web display at `http://127.0.0.1:8765/` and opens it in your
@@ -73,7 +82,7 @@ Useful options:
 Patch an output channel back into an input channel, then run:
 
 ```powershell
-poetry run python examples/loopback_sine_level_check.py --interface 2 --output-channels 0,1 --input-channels 0 --sine-dbfs -12 --tolerance-db 1
+poetry run audio-io-loopback-check --interface 2 --output-channels 0,1 --input-channels 0 --sine-dbfs -12 --tolerance-db 1
 ```
 
 The script generates a sine wave at the requested peak level, captures input for

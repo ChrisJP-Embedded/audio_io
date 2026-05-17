@@ -24,7 +24,7 @@ poetry install
 Run commands inside the Poetry environment:
 
 ```powershell
-poetry run python examples/list_devices.py
+poetry run audio-io-list-devices
 ```
 
 ## Callback usage
@@ -89,7 +89,7 @@ for device in list_devices():
 From the command line:
 
 ```powershell
-poetry run python examples/list_devices.py
+poetry run audio-io-list-devices
 ```
 
 ## Example Apps
@@ -97,35 +97,35 @@ poetry run python examples/list_devices.py
 Play a 1000 Hz sine wave on output channels 0 and 1:
 
 ```powershell
-poetry run python examples/sine_output.py --interface 2 --frequency 1000 --channels 0,1 --amplitude 0.2 --phase-degrees 0
+poetry run audio-io-sine-output --interface 2 --frequency 1000 --channels 0,1 --amplitude 0.2 --phase-degrees 0
 ```
 
 Measure RMS input level in dBFS on input channel 0:
 
 ```powershell
-poetry run python examples/input_level_meter.py --interface 0 --channels 0
+poetry run audio-io-input-meter --interface 0 --channels 0
 ```
 
 Show a live input waveform in your browser:
 
 ```powershell
-poetry run python examples/live_waveform_web.py --interface 0 --channels 0
+poetry run audio-io-live-waveform --interface 0 --channels 0
 ```
 
 Generate a known-level sine and verify the measured input level is present
 within tolerance:
 
 ```powershell
-poetry run python examples/loopback_sine_level_check.py --interface 2 --output-channels 0,1 --input-channels 0 --sine-dbfs -12 --tolerance-db 1
+poetry run audio-io-loopback-check --interface 2 --output-channels 0,1 --input-channels 0 --sine-dbfs -12 --tolerance-db 1
 ```
 
 Both examples accept `--interface`, which can be a device name substring or a
-numeric device index from `examples/list_devices.py`. Replace `0` and `2` with
+numeric device index from `audio-io-list-devices`. Replace `0` and `2` with
 the interface indices or names reported by your machine:
 
 ```powershell
-poetry run python examples/sine_output.py --interface "Focusrite" --channels 0,1
-poetry run python examples/input_level_meter.py --interface 2 --channels 0 --block-words 1024
+poetry run audio-io-sine-output --interface "Focusrite" --channels 0,1
+poetry run audio-io-input-meter --interface 2 --channels 0 --block-words 1024
 ```
 
 The sine example accepts `--phase-degrees` to apply an initial phase offset to

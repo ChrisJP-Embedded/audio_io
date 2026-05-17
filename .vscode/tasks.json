@@ -7,8 +7,7 @@
       "command": "poetry",
       "args": [
         "run",
-        "python",
-        "examples/list_devices.py"
+        "audio-io-list-devices"
       ],
       "group": "test",
       "problemMatcher": []
@@ -19,8 +18,7 @@
       "command": "poetry",
       "args": [
         "run",
-        "python",
-        "examples/sine_output.py",
+        "audio-io-sine-output",
         "--interface",
         "${input:outputInterface}",
         "--frequency",
@@ -42,8 +40,7 @@
       "command": "poetry",
       "args": [
         "run",
-        "python",
-        "examples/input_level_meter.py",
+        "audio-io-input-meter",
         "--interface",
         "${input:inputInterface}",
         "--channels",
@@ -59,8 +56,7 @@
       "command": "poetry",
       "args": [
         "run",
-        "python",
-        "examples/live_waveform_web.py",
+        "audio-io-live-waveform",
         "--interface",
         "${input:inputInterface}",
         "--channels",
@@ -76,8 +72,7 @@
       "command": "poetry",
       "args": [
         "run",
-        "python",
-        "examples/loopback_sine_level_check.py",
+        "audio-io-loopback-check",
         "--interface",
         "${input:loopbackInterface}",
         "--input-channels",

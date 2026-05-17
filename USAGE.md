@@ -13,13 +13,13 @@ poetry install
 Run commands inside the Poetry environment:
 
 ```powershell
-poetry run python examples/list_devices.py
+poetry run audio-io-list-devices
 ```
 
 ## List Devices
 
 ```powershell
-poetry run python examples/list_devices.py
+poetry run audio-io-list-devices
 ```
 
 The printed interface index can be passed as `--interface 2`, or you can pass
@@ -28,7 +28,7 @@ part of the interface name, such as `--interface "Focusrite"`.
 ## Play a 1000 Hz Sine Wave
 
 ```powershell
-poetry run python examples/sine_output.py --interface 2 --frequency 1000 --channels 0,1 --amplitude 0.2 --phase-degrees 0
+poetry run audio-io-sine-output --interface 2 --frequency 1000 --channels 0,1 --amplitude 0.2 --phase-degrees 0
 ```
 
 Useful options:
@@ -46,7 +46,7 @@ For example, `--phase-degrees 90` starts the sine wave at the positive peak.
 ## Measure Input Level in dBFS
 
 ```powershell
-poetry run python examples/input_level_meter.py --interface 0 --channels 0
+poetry run audio-io-input-meter --interface 0 --channels 0
 ```
 
 The meter reports RMS level per selected channel. With the default float audio
@@ -58,7 +58,7 @@ does not receive samples.
 ## View a Live Waveform in a Browser
 
 ```powershell
-poetry run python examples/live_waveform_web.py --interface 0 --channels 0
+poetry run audio-io-live-waveform --interface 0 --channels 0
 ```
 
 The waveform example starts a small local HTTP server at
@@ -70,7 +70,7 @@ to choose a different local port.
 ## Check Loopback Sine Level
 
 ```powershell
-poetry run python examples/loopback_sine_level_check.py --interface 2 --output-channels 0,1 --input-channels 0 --sine-dbfs -12 --tolerance-db 1
+poetry run audio-io-loopback-check --interface 2 --output-channels 0,1 --input-channels 0 --sine-dbfs -12 --tolerance-db 1
 ```
 
 This plays a sine wave at a known peak dBFS level and measures the selected

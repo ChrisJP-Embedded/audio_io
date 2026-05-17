@@ -11,14 +11,60 @@ import numpy as np
 
 try:
     from _example_bootstrap import add_src_to_path, print_config_error, print_runtime_error
-    from sine_output import SineGenerator, parse_channels
 except ImportError:
-    from examples._example_bootstrap import add_src_to_path, print_config_error, print_runtime_error
-    from examples.sine_output import SineGenerator, parse_channels
+    try:
+        from examples._example_bootstrap import add_src_to_path, print_config_error, print_runtime_error
+    except ImportError:
+        import sys
+
+        def add_src_to_path() -> None:
+            return
+
+        def print_config_error(exc: Exception) -> int:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+
+        def print_runtime_error(exc: RuntimeError) -> int:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
 
 add_src_to_path()
 
 from audio_io import AudioIOConfig, AudioIOConfigError, AudioIOSession  # noqa: E402
+
+
+def parse_channels(value: str) -> tuple[int, ...]:
+    """Parse comma-separated zero-based channel indices from the CLI."""
+
+    if not value.strip():
+        return ()
+    return tuple(int(part.strip()) for part in value.split(","))
+
+
+class SineGenerator:
+    def __init__(
+        self,
+        *,
+        frequency_hz: float,
+        sample_rate: int,
+        channels: int,
+        amplitude: float,
+        phase_degrees: float = 0.0,
+    ) -> None:
+        if not 0.0 <= amplitude <= 1.0:
+            raise ValueError("amplitude must be between 0.0 and 1.0")
+        self.frequency_hz = frequency_hz
+        self.sample_rate = sample_rate
+        self.channels = channels
+        self.amplitude = amplitude
+        self._phase = math.radians(phase_degrees) % (2.0 * math.pi)
+
+    def __call__(self, frames: int, info: object) -> np.ndarray:
+        phase_step = 2.0 * math.pi * self.frequency_hz / self.sample_rate
+        phases = self._phase + phase_step * np.arange(frames, dtype=np.float32)
+        mono = (self.amplitude * np.sin(phases)).astype(np.float32)
+        self._phase = float((phases[-1] + phase_step) % (2.0 * math.pi))
+        return np.repeat(mono[:, np.newaxis], self.channels, axis=1)
 
 
 def dbfs_to_peak(dbfs: float) -> float:

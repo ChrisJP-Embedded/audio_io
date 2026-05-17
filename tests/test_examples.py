@@ -3,15 +3,15 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-import examples.input_level_meter as input_level_meter
-import examples.live_waveform_web as live_waveform_web
-import examples.loopback_sine_level_check as loopback_sine_level_check
-import examples.sine_output as sine_output
+import examples.input_level_meter.main as input_level_meter
+import examples.live_waveform_web.main as live_waveform_web
+import examples.loopback_sine_level_check.main as loopback_sine_level_check
+import examples.sine_output.main as sine_output
 from audio_io import InvalidChannelRequestError
-from examples.input_level_meter import rms_dbfs
-from examples.loopback_sine_level_check import dbfs_to_peak, estimate_sine_peak_dbfs, levels_within_tolerance
-from examples.live_waveform_web import WaveformState
-from examples.sine_output import SineGenerator, parse_channels
+from examples.input_level_meter.main import rms_dbfs
+from examples.live_waveform_web.main import WaveformState
+from examples.loopback_sine_level_check.main import dbfs_to_peak, estimate_sine_peak_dbfs, levels_within_tolerance
+from examples.sine_output.main import SineGenerator, parse_channels
 
 
 def test_parse_channels() -> None:

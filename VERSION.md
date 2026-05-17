@@ -1,8 +1,20 @@
 # Version
 
-Current package version: `0.1.5`
+Current package version: `0.1.6`
 
 The source of truth for the package version is `pyproject.toml`.
+
+## 0.1.6
+
+Example packaging release.
+
+Included:
+
+- one directory per runnable example
+- per-example `README.md` files
+- root `pyproject.toml` console scripts for every example
+- VS Code tasks now run examples through root Poetry scripts
+- no per-example Poetry project files; the top-level Poetry project remains the only environment source
 
 ## 0.1.5
 
@@ -10,7 +22,7 @@ Documentation and example alignment release.
 
 Included:
 
-- `examples/live_waveform_web.py`
+- `examples/live_waveform_web/`
 - `examples/README.md`
 - VS Code task for the live waveform web example
 - live waveform startup order now opens audio before serving/opening the browser
@@ -32,7 +44,7 @@ Loopback level-check example release.
 
 Included:
 
-- `examples/loopback_sine_level_check.py`
+- `examples/loopback_sine_level_check/`
 - known peak dBFS sine generation for loopback checks
 - input sine peak estimation that is independent of signal phase
 - pass/fail tolerance checks in dB

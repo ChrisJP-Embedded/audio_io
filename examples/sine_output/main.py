@@ -12,7 +12,21 @@ import numpy as np
 try:
     from _example_bootstrap import add_src_to_path, print_config_error, print_runtime_error
 except ImportError:
-    from examples._example_bootstrap import add_src_to_path, print_config_error, print_runtime_error
+    try:
+        from examples._example_bootstrap import add_src_to_path, print_config_error, print_runtime_error
+    except ImportError:
+        import sys
+
+        def add_src_to_path() -> None:
+            return
+
+        def print_config_error(exc: Exception) -> int:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+
+        def print_runtime_error(exc: RuntimeError) -> int:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
 
 add_src_to_path()
 
