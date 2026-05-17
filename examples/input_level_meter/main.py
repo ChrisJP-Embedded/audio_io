@@ -215,8 +215,10 @@ def build_html_page() -> str:
   <main>
     <div class="toolbar">
       <label>
-        Time window
+        Wave X
         <select id="timeWindow">
+          <option value="0.005">5 ms</option>
+          <option value="0.01">10 ms</option>
           <option value="0.02">20 ms</option>
           <option value="0.05">50 ms</option>
           <option value="0.1">100 ms</option>
@@ -224,6 +226,10 @@ def build_html_page() -> str:
           <option value="1">1 s</option>
           <option value="5">5 s</option>
         </select>
+      </label>
+      <label>
+        Wave Y <span class="readout" id="waveGainReadout">x1</span>
+        <input id="waveGain" type="range" min="0" max="7" value="0" step="1">
       </label>
       <label>
         Meter gain <span class="readout" id="gainReadout">0 dB</span>
@@ -251,8 +257,10 @@ def build_html_page() -> str:
     const waveformMeta = document.querySelector("#waveformMeta");
     const fftMeta = document.querySelector("#fftMeta");
     const timeWindow = document.querySelector("#timeWindow");
+    const waveGain = document.querySelector("#waveGain");
     const meterGain = document.querySelector("#meterGain");
     const refreshHz = document.querySelector("#refreshHz");
+    const waveGainReadout = document.querySelector("#waveGainReadout");
     const gainReadout = document.querySelector("#gainReadout");
     const refreshReadout = document.querySelector("#refreshReadout");
     const display = new Map();
@@ -361,6 +369,10 @@ def build_html_page() -> str:
       return Array.from(new Float32Array(bytes.buffer));
     }
 
+    function waveformScale() {
+      return 2 ** Number(waveGain.value);
+    }
+
     function render(data) {
       ensureRows(data.channels || []);
       ensureCharts(data.channels || []);
@@ -375,7 +387,11 @@ def build_html_page() -> str:
         document.querySelector(`[data-value="${key}"]`).textContent = `${smoothed.toFixed(1)} dBFS`;
       });
       const waveformX = decodeSeries(data.waveform?.x);
-      const waveformData = [waveformX, ...(data.waveform?.channels || []).map(decodeSeries)];
+      const scale = waveformScale();
+      const waveformData = [
+        waveformX,
+        ...(data.waveform?.channels || []).map((series) => decodeSeries(series).map((sample) => sample * scale)),
+      ];
       waveformChart.setData(waveformData);
 
       const fftX = decodeSeries(data.fft?.x);
@@ -383,7 +399,7 @@ def build_html_page() -> str:
       fftChart.setData(fftData);
 
       meta.textContent = `${data.frames} frames at ${data.sample_rate} Hz`;
-      waveformMeta.textContent = `${Number(timeWindow.value) * 1000} ms`;
+      waveformMeta.textContent = `${Number(timeWindow.value) * 1000} ms, x${scale}`;
       fftMeta.textContent = `${data.fft?.bin_count || 0} bins`;
     }
 
@@ -401,6 +417,7 @@ def build_html_page() -> str:
 
     function updateControls() {
       const gain = Number(meterGain.value);
+      waveGainReadout.textContent = `x${waveformScale()}`;
       gainReadout.textContent = `${gain >= 0 ? "+" : ""}${gain} dB`;
       refreshReadout.textContent = `${refreshHz.value} Hz`;
       if (timerId) clearInterval(timerId);
@@ -409,6 +426,7 @@ def build_html_page() -> str:
     }
 
     window.addEventListener("resize", resizeCharts);
+    waveGain.addEventListener("input", updateControls);
     meterGain.addEventListener("input", updateControls);
     refreshHz.addEventListener("input", updateControls);
     timeWindow.addEventListener("change", refresh);

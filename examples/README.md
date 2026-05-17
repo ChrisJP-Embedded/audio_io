@@ -76,8 +76,8 @@ poetry run audio-io-input-meter --interface 0 --channels 0
 ```
 
 The meter opens a native pywebview GUI and shows RMS level in dBFS, a live
-uPlot waveform with time zoom, and a buffered FFT chart for each selected input
-channel. With the default float format, `0 dBFS` is full scale and quieter
+uPlot waveform with X/Y scaling, and a buffered FFT chart for each selected
+input channel. With the default float format, `0 dBFS` is full scale and quieter
 signals are negative.
 
 ## View a Live Waveform

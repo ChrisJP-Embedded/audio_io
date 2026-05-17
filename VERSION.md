@@ -1,8 +1,19 @@
 # Version
 
-Current package version: `0.1.9`
+Current package version: `0.1.10`
 
 The source of truth for the package version is `pyproject.toml`.
+
+## 0.1.10
+
+Waveform scaling release.
+
+Included:
+
+- shorter waveform X-axis windows down to 5 ms
+- waveform Y-axis zoom up to x128 for quieter signals
+- waveform scale readouts in the GUI metadata
+- documentation updates for scope-style waveform controls
 
 ## 0.1.9
 

@@ -19,7 +19,9 @@ The local `.vscode/tasks.json` includes clean, install, and run tasks for the
 copied app.
 
 With the default float format, `0 dBFS` is full scale and quieter signals are
-negative values. The default `--block-words 256` is chosen for responsive meter
+negative values. Use `Wave X` to zoom the visible time window down to 5 ms and
+`Wave Y` to magnify quiet waveforms up to x128 without changing the measured
+dBFS values. The default `--block-words 256` is chosen for responsive meter
 updates without making the RMS display too noisy. The GUI uses a rolling buffer,
 decimated waveform payloads, and a fixed-refresh FFT snapshot instead of a
 single-sample update chain.
