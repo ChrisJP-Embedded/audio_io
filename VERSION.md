@@ -1,8 +1,21 @@
 # Version
 
-Current package version: `0.1.8`
+Current package version: `0.1.9`
 
 The source of truth for the package version is `pyproject.toml`.
+
+## 0.1.9
+
+uPlot input meter visualization release.
+
+Included:
+
+- vendored uPlot assets for the input meter GUI
+- live waveform chart with selectable time window
+- display gain control for dB meters
+- buffered FFT chart below the waveform
+- batched binary waveform/FFT payloads from Python to JavaScript
+- rolling input history with display decimation for responsive updates
 
 ## 0.1.8
 

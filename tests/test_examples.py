@@ -12,7 +12,7 @@ import examples.live_waveform_web.main as live_waveform_web
 import examples.loopback_sine_level_check.main as loopback_sine_level_check
 import examples.sine_output.main as sine_output
 from audio_io import InvalidChannelRequestError
-from examples.input_level_meter.main import LevelMeterState, rms_dbfs
+from examples.input_level_meter.main import LevelMeterState, _decimate_for_display, _fft_dbfs, rms_dbfs
 from examples.live_waveform_web.main import WaveformState
 from examples.loopback_sine_level_check.main import dbfs_to_peak, estimate_sine_peak_dbfs, levels_within_tolerance
 from examples.sine_output.main import SineGenerator, parse_channels
@@ -96,7 +96,7 @@ def test_rms_dbfs_reports_full_scale_and_silence_floor() -> None:
 
 
 def test_level_meter_state_snapshots_latest_levels() -> None:
-    state = LevelMeterState(channels=(0, 1), sample_rate=48_000)
+    state = LevelMeterState(channels=(0, 1), sample_rate=48_000, history_seconds=1.0, fft_size=128)
 
     state.update(np.array([[1.0, 0.0], [-1.0, 0.0]], dtype=np.float32), info=None)
     snapshot = state.snapshot()
@@ -106,6 +106,33 @@ def test_level_meter_state_snapshots_latest_levels() -> None:
     assert snapshot["frames"] == 2
     assert snapshot["channels"] == [0, 1]
     assert snapshot["rms_dbfs"] == [0.0, -120.0]
+    assert snapshot["waveform"]["x"]
+    assert len(snapshot["waveform"]["channels"]) == 2
+    assert snapshot["fft"]["bin_count"] > 0
+    assert len(snapshot["fft"]["channels"]) == 2
+
+
+def test_decimate_for_display_limits_points() -> None:
+    block = np.arange(100, dtype=np.float32).reshape(50, 2)
+
+    decimated = _decimate_for_display(block, max_points=10)
+
+    assert decimated.shape == (10, 2)
+    assert decimated[0].tolist() == [0.0, 1.0]
+    assert decimated[-1].tolist() == [98.0, 99.0]
+
+
+def test_fft_dbfs_reports_frequency_bins() -> None:
+    sample_rate = 48_000
+    frames = np.arange(4096, dtype=np.float32)
+    sine = np.sin(2 * np.pi * 1000 * frames / sample_rate).astype(np.float32)
+    block = sine[:, np.newaxis]
+
+    frequencies, levels = _fft_dbfs(block, sample_rate=sample_rate, max_bins=256)
+
+    assert frequencies.shape == (256,)
+    assert levels.shape == (256, 1)
+    assert float(np.max(levels)) > -6.0
 
 
 def test_dbfs_to_peak_converts_negative_dbfs() -> None:
