@@ -1,4 +1,4 @@
-"""List audio devices visible to the current platform backend."""
+"""List audio interfaces visible to the current platform backend."""
 
 from __future__ import annotations
 

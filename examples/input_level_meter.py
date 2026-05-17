@@ -20,12 +20,16 @@ from audio_io import AudioIOConfig, AudioIOConfigError, AudioIOSession  # noqa: 
 
 
 def parse_channels(value: str) -> tuple[int, ...]:
+    """Parse comma-separated zero-based channel indices from the CLI."""
+
     if not value.strip():
         return ()
     return tuple(int(part.strip()) for part in value.split(","))
 
 
 def rms_dbfs(block: np.ndarray, *, floor_db: float = -120.0) -> np.ndarray:
+    """Return per-channel RMS level in dBFS for a `(frames, channels)` block."""
+
     if block.ndim != 2:
         raise ValueError("block must be shaped as (frames, channels)")
     rms = np.sqrt(np.mean(np.square(block.astype(np.float32)), axis=0))

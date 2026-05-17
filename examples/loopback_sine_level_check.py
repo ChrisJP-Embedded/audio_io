@@ -22,6 +22,8 @@ from audio_io import AudioIOConfig, AudioIOConfigError, AudioIOSession  # noqa: 
 
 
 def dbfs_to_peak(dbfs: float) -> float:
+    """Convert a dBFS peak level to linear float amplitude."""
+
     if dbfs > 0.0:
         raise ValueError("sine-dbfs must be less than or equal to 0")
     return 10.0 ** (dbfs / 20.0)
@@ -43,6 +45,9 @@ def estimate_sine_peak_dbfs(block: np.ndarray, *, frequency_hz: float, sample_ra
 
     frame_indices = np.arange(len(block), dtype=np.float64)
     radians = 2.0 * math.pi * frequency_hz * frame_indices / sample_rate
+
+    # Fit sin, cos, and DC terms. Combining the sin/cos coefficients recovers
+    # amplitude even when the captured signal has an arbitrary phase offset.
     design = np.column_stack((np.sin(radians), np.cos(radians), np.ones(len(block))))
     coefficients, *_ = np.linalg.lstsq(design, block.astype(np.float64), rcond=None)
     sine_coefficients = coefficients[:2, :]

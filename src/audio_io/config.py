@@ -16,7 +16,7 @@ class AudioIOConfig:
     `block_words` is the number of sample frames per callback block. Each frame
     contains one word per selected channel.
 
-    Channel indices are zero-based logical device channels. For example,
+    Channel indices are zero-based logical interface channels. For example,
     `output_channels=(0, 2)` asks the backend to write only hardware output
     channels 1 and 3 while presenting a compact two-column block to callers.
     """
@@ -32,10 +32,15 @@ class AudioIOConfig:
     device: str | int | None = None
 
     def __post_init__(self) -> None:
+        # `device` is kept as a compatibility alias while `interface` is the
+        # preferred name used by the rest of the package.
         if self.interface is not None and self.device is not None and self.interface != self.device:
             raise ValueError("interface and device cannot name different audio interfaces")
         if self.interface is None and self.device is not None:
             object.__setattr__(self, "interface", self.device)
+
+        # Store channel selections immutably so sessions can safely reuse the
+        # same config object across callbacks and backend validation.
         object.__setattr__(self, "input_channels", tuple(self.input_channels))
         object.__setattr__(self, "output_channels", tuple(self.output_channels))
 

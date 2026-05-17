@@ -20,6 +20,8 @@ from audio_io import AudioIOConfig, AudioIOConfigError, AudioIOSession  # noqa: 
 
 
 def parse_channels(value: str) -> tuple[int, ...]:
+    """Parse comma-separated zero-based channel indices from the CLI."""
+
     if not value.strip():
         return ()
     return tuple(int(part.strip()) for part in value.split(","))
@@ -44,6 +46,8 @@ class SineGenerator:
         self._phase = math.radians(phase_degrees) % (2.0 * math.pi)
 
     def __call__(self, frames: int, info: object) -> np.ndarray:
+        # Keep phase continuous across callback blocks so the waveform does not
+        # click at block boundaries.
         phase_step = 2.0 * math.pi * self.frequency_hz / self.sample_rate
         phases = self._phase + phase_step * np.arange(frames, dtype=np.float32)
         mono = (self.amplitude * np.sin(phases)).astype(np.float32)

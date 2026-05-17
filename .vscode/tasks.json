@@ -54,6 +54,23 @@
       "problemMatcher": []
     },
     {
+      "label": "example: live waveform web",
+      "type": "shell",
+      "command": "poetry",
+      "args": [
+        "run",
+        "python",
+        "examples/live_waveform_web.py",
+        "--interface",
+        "${input:inputInterface}",
+        "--channels",
+        "0"
+      ],
+      "group": "test",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
       "label": "example: loopback sine level check",
       "type": "shell",
       "command": "poetry",

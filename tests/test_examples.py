@@ -4,11 +4,13 @@ import numpy as np
 import pytest
 
 import examples.input_level_meter as input_level_meter
+import examples.live_waveform_web as live_waveform_web
 import examples.loopback_sine_level_check as loopback_sine_level_check
 import examples.sine_output as sine_output
 from audio_io import InvalidChannelRequestError
 from examples.input_level_meter import rms_dbfs
 from examples.loopback_sine_level_check import dbfs_to_peak, estimate_sine_peak_dbfs, levels_within_tolerance
+from examples.live_waveform_web import WaveformState
 from examples.sine_output import SineGenerator, parse_channels
 
 
@@ -84,6 +86,20 @@ def test_levels_within_tolerance() -> None:
     assert passed.tolist() == [True, False, False]
 
 
+def test_waveform_state_snapshots_latest_block() -> None:
+    state = WaveformState(channels=(0, 1), sample_rate=48_000, max_points=2)
+
+    state.update(np.array([[0.0, 0.5], [1.0, -1.0], [0.0, 0.25]], dtype=np.float32), info=None)
+    snapshot = state.snapshot()
+
+    assert snapshot["sequence"] == 1
+    assert snapshot["frames"] == 3
+    assert snapshot["channels"] == [0, 1]
+    assert snapshot["display_sample_rate"] == 32_000
+    assert snapshot["samples"] == [[0.0, 0.0], [0.5, 0.25]]
+    assert len(snapshot["rms_dbfs"]) == 2
+
+
 class RaisingSession:
     def __init__(self, config, **kwargs):
         raise InvalidChannelRequestError(
@@ -115,6 +131,10 @@ class RaisingSession:
                 "--measure-seconds",
                 "0",
             ],
+        ),
+        (
+            live_waveform_web,
+            ["--interface", "Output Only", "--channels", "2", "--seconds", "0", "--no-browser"],
         ),
     ],
 )

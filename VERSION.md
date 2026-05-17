@@ -1,8 +1,20 @@
 # Version
 
-Current package version: `0.1.4`
+Current package version: `0.1.5`
 
 The source of truth for the package version is `pyproject.toml`.
+
+## 0.1.5
+
+Documentation and example alignment release.
+
+Included:
+
+- `examples/live_waveform_web.py`
+- `examples/README.md`
+- VS Code task for the live waveform web example
+- live waveform startup order now opens audio before serving/opening the browser
+- docs and tests aligned with the full current example set
 
 ## 0.1.4
 

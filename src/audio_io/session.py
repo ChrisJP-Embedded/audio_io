@@ -53,6 +53,8 @@ class AudioIOSession:
         self._last_status: object | None = None
 
     def start(self) -> "AudioIOSession":
+        """Open and start the backend stream, returning this session for chaining."""
+
         if self._stream is not None:
             return self
         self._stream = self._backend.open_stream(self.config, self._stream_callback)
@@ -60,6 +62,8 @@ class AudioIOSession:
         return self
 
     def stop(self) -> None:
+        """Stop and close the stream if it is currently open."""
+
         if self._stream is None:
             return
         self._stream.stop()
@@ -81,19 +85,27 @@ class AudioIOSession:
         return self._last_status
 
     def read_input_block(self, timeout: float | None = None) -> AudioArray:
+        """Read the next queued input block, blocking until one is available."""
+
         return self._input_queue.get(timeout=timeout)
 
     def try_read_input_block(self) -> AudioArray | None:
+        """Read one input block without blocking, or return None when empty."""
+
         try:
             return self._input_queue.get_nowait()
         except Empty:
             return None
 
     def write_output_block(self, block: ArrayLike, timeout: float | None = None) -> None:
+        """Queue one output block for the backend callback to render."""
+
         output = self._coerce_output_block(block)
         self._output_queue.put(output, timeout=timeout)
 
     def try_write_output_block(self, block: ArrayLike) -> bool:
+        """Queue one output block without blocking, returning False when full."""
+
         output = self._coerce_output_block(block)
         try:
             self._output_queue.put_nowait(output)
@@ -109,6 +121,8 @@ class AudioIOSession:
         time: object,
         status: object,
     ) -> None:
+        """Bridge the backend callback into the public callback/queue API."""
+
         info = BlockInfo(frame_count=frames, time=time, status=status)
         self._last_status = status
 
@@ -123,6 +137,8 @@ class AudioIOSession:
             outdata[:] = self._next_output_block(frames, info)
 
     def _next_output_block(self, frames: int, info: BlockInfo) -> AudioArray:
+        """Return one output block, falling back to silence on callback/queue gaps."""
+
         if self._output_callback:
             block = self._output_callback(frames, info)
             if block is None:
@@ -147,6 +163,8 @@ class AudioIOSession:
 
     @staticmethod
     def _drop_oldest_and_put(queue: Queue[AudioArray], block: AudioArray) -> None:
+        # Audio callbacks should not block waiting for slow consumers. Keeping
+        # the newest block makes level meters and UI displays stay current.
         try:
             queue.put_nowait(block)
             return

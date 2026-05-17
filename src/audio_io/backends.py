@@ -74,6 +74,10 @@ class SoundDeviceBackend:
     def open_stream(self, config: AudioIOConfig, callback: StreamCallback) -> StreamHandle:
         device_info = resolve_interface(self.list_devices(), config.interface)
         validate_channel_request(config, device_info)
+
+        # sounddevice wants a channel count or channel span, while the public
+        # API accepts sparse selections such as (0, 2). Open the widest needed
+        # span here, then compact/expand blocks inside the callback wrappers.
         input_channel_span = _channel_span(config.input_channels)
         output_channel_span = _channel_span(config.output_channels)
 
@@ -124,6 +128,8 @@ def list_devices(backend: AudioBackend | None = None) -> list[DeviceInfo]:
 
 
 def resolve_interface(devices: list[DeviceInfo], interface: str | int | None) -> DeviceInfo:
+    """Resolve a user-supplied interface index or name substring to one device."""
+
     if not devices:
         raise InterfaceNotFoundError("No audio interfaces are available")
 
@@ -146,6 +152,8 @@ def resolve_interface(devices: list[DeviceInfo], interface: str | int | None) ->
 
 
 def validate_channel_request(config: AudioIOConfig, interface: DeviceInfo) -> None:
+    """Validate that selected channels exist on the chosen interface."""
+
     _validate_channel_list(
         side="input",
         channels=config.input_channels,
@@ -185,12 +193,16 @@ def _channel_span(channels: tuple[int, ...]) -> int:
 
 
 def _select_channels(block: AudioBlock, channels: tuple[int, ...]) -> AudioBlock:
+    """Return the compact caller-facing view of selected hardware channels."""
+
     if tuple(channels) == tuple(range(len(channels))):
         return block
     return np.ascontiguousarray(block[:, channels])
 
 
 def _write_channels(target: AudioBlock, source: AudioBlock, channels: tuple[int, ...]) -> None:
+    """Expand a compact caller block into the hardware channel span."""
+
     target[:] = 0
     if tuple(channels) == tuple(range(len(channels))):
         target[:] = source

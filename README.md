@@ -12,8 +12,8 @@ behavior stays inside the backend, while the public API uses the same
 configuration object on both operating systems.
 Tests use an in-memory fake backend, so they do not require audio hardware.
 
-See [USAGE.md](USAGE.md) for practical examples and [VERSION.md](VERSION.md)
-for release notes.
+See [USAGE.md](USAGE.md) for API usage, [examples/README.md](examples/README.md)
+for runnable example scripts, and [VERSION.md](VERSION.md) for release notes.
 
 ## Install
 
@@ -77,7 +77,7 @@ with AudioIOSession(config) as session:
     captured = session.read_input_block(timeout=1.0)
 ```
 
-## Device lookup
+## Interface lookup
 
 ```python
 from audio_io import list_devices
@@ -104,6 +104,12 @@ Measure RMS input level in dBFS on input channel 0:
 
 ```powershell
 poetry run python examples/input_level_meter.py --interface 0 --channels 0
+```
+
+Show a live input waveform in your browser:
+
+```powershell
+poetry run python examples/live_waveform_web.py --interface 0 --channels 0
 ```
 
 Generate a known-level sine and verify the measured input level is present
