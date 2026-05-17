@@ -50,12 +50,13 @@ poetry run audio-io-input-meter --interface 0 --channels 0
 ```
 
 The meter opens a native pywebview GUI with dB meters, display gain, a live
-uPlot waveform, X/Y waveform scaling, and a buffered FFT chart. Use `Wave X` to
-zoom the visible time window down to a few milliseconds, and `Wave Y` to magnify
-quiet signals without changing the measured dBFS values. With the default float
-audio format, `0 dBFS` is full scale and quieter signals are negative values.
-The default `--block-words 256` keeps GUI updates responsive while leaving
-enough samples for stable RMS readings.
+uPlot waveform, integrated X/Y waveform scaling, and a buffered FFT chart. Use
+the waveform panel controls to zoom the visible time window down to a few
+milliseconds and tighten the chart Y-axis around quieter signals without
+changing the measured dBFS values. With the default float audio format,
+`0 dBFS` is full scale and quieter signals are negative values. The default
+`--block-words 256` keeps GUI updates responsive while leaving enough samples
+for stable RMS readings.
 
 On macOS, grant microphone permission to the terminal or IDE if the input meter
 does not receive samples.

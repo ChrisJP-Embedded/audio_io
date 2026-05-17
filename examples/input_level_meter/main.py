@@ -141,6 +141,25 @@ def build_html_page() -> str:
       justify-content: space-between;
       gap: 1rem;
     }
+    .panel-heading {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .chart-controls {
+      display: flex;
+      align-items: end;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .chart-controls label {
+      min-width: 6.5rem;
+    }
+    .chart-controls input[type="range"] {
+      width: 7.5rem;
+    }
     #waveformChart,
     #fftChart {
       height: 230px;
@@ -215,23 +234,6 @@ def build_html_page() -> str:
   <main>
     <div class="toolbar">
       <label>
-        Wave X
-        <select id="timeWindow">
-          <option value="0.005">5 ms</option>
-          <option value="0.01">10 ms</option>
-          <option value="0.02">20 ms</option>
-          <option value="0.05">50 ms</option>
-          <option value="0.1">100 ms</option>
-          <option value="0.25" selected>250 ms</option>
-          <option value="1">1 s</option>
-          <option value="5">5 s</option>
-        </select>
-      </label>
-      <label>
-        Wave Y <span class="readout" id="waveGainReadout">x1</span>
-        <input id="waveGain" type="range" min="0" max="7" value="0" step="1">
-      </label>
-      <label>
         Meter gain <span class="readout" id="gainReadout">0 dB</span>
         <input id="meterGain" type="range" min="-24" max="24" value="0" step="1">
       </label>
@@ -243,7 +245,31 @@ def build_html_page() -> str:
     <div id="meters"></div>
     <div class="ticks"><span>-60</span><span>-45</span><span>-30</span><span>-15</span><span>0 dBFS</span></div>
     <section class="panel">
-      <div class="panel-title"><span>Waveform</span><span id="waveformMeta">waiting...</span></div>
+      <div class="panel-title">
+        <div class="panel-heading">
+          <span>Waveform</span>
+          <span id="waveformMeta">waiting...</span>
+        </div>
+        <div class="chart-controls">
+          <label>
+            X window
+            <select id="timeWindow">
+              <option value="0.005">5 ms</option>
+              <option value="0.01">10 ms</option>
+              <option value="0.02">20 ms</option>
+              <option value="0.05">50 ms</option>
+              <option value="0.1">100 ms</option>
+              <option value="0.25" selected>250 ms</option>
+              <option value="1">1 s</option>
+              <option value="5">5 s</option>
+            </select>
+          </label>
+          <label>
+            Y scale <span class="readout" id="waveGainReadout">x1</span>
+            <input id="waveGain" type="range" min="0" max="7" value="0" step="1">
+          </label>
+        </div>
+      </div>
       <div id="waveformChart"></div>
     </section>
     <section class="panel">
@@ -316,7 +342,7 @@ def build_html_page() -> str:
           scales: { x: { time: false }, y: { range: [-1, 1] } },
           axes: [
             { label: "ms", stroke: "#8f989e", grid: { stroke: "#263037", width: 1 } },
-            { label: "amp", stroke: "#8f989e", grid: { stroke: "#263037", width: 1 } },
+            { label: "FS", stroke: "#8f989e", grid: { stroke: "#263037", width: 1 } },
           ],
           series: [
             {},
@@ -373,6 +399,10 @@ def build_html_page() -> str:
       return 2 ** Number(waveGain.value);
     }
 
+    function waveformYRange() {
+      return 1 / waveformScale();
+    }
+
     function render(data) {
       ensureRows(data.channels || []);
       ensureCharts(data.channels || []);
@@ -388,10 +418,9 @@ def build_html_page() -> str:
       });
       const waveformX = decodeSeries(data.waveform?.x);
       const scale = waveformScale();
-      const waveformData = [
-        waveformX,
-        ...(data.waveform?.channels || []).map((series) => decodeSeries(series).map((sample) => sample * scale)),
-      ];
+      const yRange = waveformYRange();
+      waveformChart.setScale("y", { min: -yRange, max: yRange });
+      const waveformData = [waveformX, ...(data.waveform?.channels || []).map(decodeSeries)];
       waveformChart.setData(waveformData);
 
       const fftX = decodeSeries(data.fft?.x);
@@ -399,7 +428,7 @@ def build_html_page() -> str:
       fftChart.setData(fftData);
 
       meta.textContent = `${data.frames} frames at ${data.sample_rate} Hz`;
-      waveformMeta.textContent = `${Number(timeWindow.value) * 1000} ms, x${scale}`;
+      waveformMeta.textContent = `${Number(timeWindow.value) * 1000} ms, y +/-${yRange.toPrecision(3)} FS, x${scale}`;
       fftMeta.textContent = `${data.fft?.bin_count || 0} bins`;
     }
 
@@ -429,7 +458,7 @@ def build_html_page() -> str:
     waveGain.addEventListener("input", updateControls);
     meterGain.addEventListener("input", updateControls);
     refreshHz.addEventListener("input", updateControls);
-    timeWindow.addEventListener("change", refresh);
+    timeWindow.addEventListener("change", updateControls);
     updateControls();
     refresh();
   </script>

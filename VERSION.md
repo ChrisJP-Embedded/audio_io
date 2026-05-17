@@ -1,8 +1,19 @@
 # Version
 
-Current package version: `0.1.10`
+Current package version: `0.1.11`
 
 The source of truth for the package version is `pyproject.toml`.
+
+## 0.1.11
+
+Integrated waveform controls release.
+
+Included:
+
+- waveform X/Y controls moved into the chart panel
+- waveform Y zoom now updates the chart axis range directly
+- waveform readout now reports the visible full-scale amplitude range
+- cleaner meter toolbar focused on level and refresh controls
 
 ## 0.1.10
 

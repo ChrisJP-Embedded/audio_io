@@ -118,7 +118,9 @@ def test_input_meter_html_includes_waveform_scaling_controls() -> None:
     assert 'id="timeWindow"' in html
     assert 'value="0.005"' in html
     assert 'id="waveGain"' in html
+    assert "Y scale" in html
     assert "waveformScale()" in html
+    assert 'setScale("y"' in html
 
 
 def test_decimate_for_display_limits_points() -> None:
