@@ -1,0 +1,22 @@
+[project]
+name = "audio-io-example-live-waveform-web"
+version = "0.1.0"
+description = "Standalone app template for viewing live input waveforms with audio-io."
+requires-python = ">=3.10"
+dynamic = ["dependencies"]
+authors = [
+  { name = "audio-io contributors" },
+]
+
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.dependencies]
+audio-io = { path = "../..", develop = true }
+
+[project.scripts]
+run-example = "main:main"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

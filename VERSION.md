@@ -1,8 +1,21 @@
 # Version
 
-Current package version: `0.1.6`
+Current package version: `0.1.7`
 
 The source of truth for the package version is `pyproject.toml`.
+
+## 0.1.7
+
+Copyable example app template release.
+
+Included:
+
+- per-example `pyproject.toml` files
+- per-example Windows PowerShell setup scripts
+- per-example macOS/Linux setup scripts
+- per-example VS Code tasks for cleaning, installing, and running
+- per-example README workflow for copied app usage
+- root Poetry project remains the repo-wide package and example entry point
 
 ## 0.1.6
 

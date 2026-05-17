@@ -6,6 +6,17 @@ Play a continuous sine wave through selected output channels.
 poetry run audio-io-sine-output --interface 2 --frequency 1000 --channels 0,1 --amplitude 0.2 --phase-degrees 0
 ```
 
+As a copied app template:
+
+```powershell
+poetry install
+poetry run run-example --interface 2 --frequency 1000 --channels 0,1 --amplitude 0.2
+```
+
+Or run `.\setup.ps1` on Windows PowerShell / `./setup.sh` on macOS or Linux.
+The local `.vscode/tasks.json` includes clean, install, and run tasks for the
+copied app.
+
 Useful options:
 
 - `--interface`: interface index or name substring

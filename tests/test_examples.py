@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import json
+import tomllib
+from pathlib import Path
+
 import numpy as np
 import pytest
 
@@ -14,8 +18,48 @@ from examples.loopback_sine_level_check.main import dbfs_to_peak, estimate_sine_
 from examples.sine_output.main import SineGenerator, parse_channels
 
 
+EXAMPLE_DIRS = [
+    Path("examples/list_devices"),
+    Path("examples/sine_output"),
+    Path("examples/input_level_meter"),
+    Path("examples/live_waveform_web"),
+    Path("examples/loopback_sine_level_check"),
+]
+
+
 def test_parse_channels() -> None:
     assert parse_channels("0, 2,3") == (0, 2, 3)
+
+
+@pytest.mark.parametrize("example_dir", EXAMPLE_DIRS)
+def test_example_app_template_files_exist(example_dir: Path) -> None:
+    assert (example_dir / "README.md").is_file()
+    assert (example_dir / "pyproject.toml").is_file()
+    assert (example_dir / "setup.ps1").is_file()
+    assert (example_dir / "setup.sh").is_file()
+    assert (example_dir / ".vscode" / "tasks.json").is_file()
+
+
+@pytest.mark.parametrize("example_dir", EXAMPLE_DIRS)
+def test_example_app_template_pyproject_is_valid(example_dir: Path) -> None:
+    pyproject = tomllib.loads((example_dir / "pyproject.toml").read_text())
+
+    assert pyproject["project"]["requires-python"] == ">=3.10"
+    assert pyproject["project"]["dynamic"] == ["dependencies"]
+    assert pyproject["tool"]["poetry"]["package-mode"] is False
+    assert pyproject["tool"]["poetry"]["dependencies"]["audio-io"] == {
+        "path": "../..",
+        "develop": True,
+    }
+    assert pyproject["project"]["scripts"]["run-example"] == "main:main"
+
+
+@pytest.mark.parametrize("example_dir", EXAMPLE_DIRS)
+def test_example_vscode_tasks_include_clean_install_and_run(example_dir: Path) -> None:
+    tasks = json.loads((example_dir / ".vscode" / "tasks.json").read_text())["tasks"]
+    labels = {task["label"] for task in tasks}
+
+    assert {"clean: python caches", "install: poetry env", "run: example app"} <= labels
 
 
 def test_sine_generator_outputs_expected_shape_and_amplitude() -> None:

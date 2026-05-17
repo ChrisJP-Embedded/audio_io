@@ -13,9 +13,29 @@ are intended to be easy starting points for a new app: copy the folder, keep the
 root `pyproject.toml` dependency set or add `audio-io` plus the same runtime
 dependencies to your app, then adapt `main.py`.
 
-This repository intentionally has only one Poetry project file at the root. The
-top-level `pyproject.toml` owns the package, all example dependencies, and the
-console scripts below.
+This repository's root `pyproject.toml` owns the package, all repo-wide example
+dependencies, and the console scripts below. Each example folder also includes
+its own `pyproject.toml` and setup scripts so the folder can be copied out and
+used as the seed of a separate app.
+
+Per-example template workflow:
+
+```powershell
+cd examples/sine_output
+poetry install
+poetry run run-example --interface 2
+```
+
+On macOS/Linux, `./setup.sh` runs the install and prints the matching command.
+On Windows PowerShell, run `.\setup.ps1`.
+
+Each copied example also includes `.vscode/tasks.json` with tasks to clean
+Python caches, install the Poetry environment, and run the example app.
+
+The per-example `pyproject.toml` files use `audio-io = { path = "../..",
+develop = true }` while they live inside this repository. If you copy a folder
+elsewhere, update that dependency to point at your local checkout or a published
+`audio-io` package.
 
 Use [list_devices](list_devices/README.md) first to find the interface index or name to
 pass to the other examples. Interface names can be exact names, substrings, or
