@@ -69,14 +69,15 @@ Useful options:
 - `--phase-degrees`: initial phase offset
 - `--seconds`: run duration; omit to run until `Ctrl+C`
 
-## Measure Input Level
+## GUI Input Level Meter
 
 ```powershell
-poetry run audio-io-input-meter --interface 0 --channels 0 --block-words 1024
+poetry run audio-io-input-meter --interface 0 --channels 0
 ```
 
-The meter prints RMS level in dBFS for each selected input channel. With the
-default float format, `0 dBFS` is full scale and quieter signals are negative.
+The meter opens a native pywebview GUI and shows RMS level in dBFS for each
+selected input channel. With the default float format, `0 dBFS` is full scale
+and quieter signals are negative.
 
 ## View a Live Waveform
 

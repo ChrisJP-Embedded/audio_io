@@ -100,7 +100,7 @@ Play a 1000 Hz sine wave on output channels 0 and 1:
 poetry run audio-io-sine-output --interface 2 --frequency 1000 --channels 0,1 --amplitude 0.2 --phase-degrees 0
 ```
 
-Measure RMS input level in dBFS on input channel 0:
+Show a GUI RMS input level meter in dBFS on input channel 0:
 
 ```powershell
 poetry run audio-io-input-meter --interface 0 --channels 0

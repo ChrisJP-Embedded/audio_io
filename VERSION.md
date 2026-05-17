@@ -1,8 +1,20 @@
 # Version
 
-Current package version: `0.1.7`
+Current package version: `0.1.8`
 
 The source of truth for the package version is `pyproject.toml`.
+
+## 0.1.8
+
+GUI input meter release.
+
+Included:
+
+- input level meter now uses a native pywebview GUI
+- lower-latency `256` frame default block size for meter updates
+- callback-fed meter state shared with JavaScript UI
+- `pywebview` dependency for the root app and input-meter template
+- tests for the GUI meter state
 
 ## 0.1.7
 

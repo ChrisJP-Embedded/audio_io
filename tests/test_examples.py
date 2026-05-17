@@ -12,7 +12,7 @@ import examples.live_waveform_web.main as live_waveform_web
 import examples.loopback_sine_level_check.main as loopback_sine_level_check
 import examples.sine_output.main as sine_output
 from audio_io import InvalidChannelRequestError
-from examples.input_level_meter.main import rms_dbfs
+from examples.input_level_meter.main import LevelMeterState, rms_dbfs
 from examples.live_waveform_web.main import WaveformState
 from examples.loopback_sine_level_check.main import dbfs_to_peak, estimate_sine_peak_dbfs, levels_within_tolerance
 from examples.sine_output.main import SineGenerator, parse_channels
@@ -44,7 +44,7 @@ def test_example_app_template_files_exist(example_dir: Path) -> None:
 def test_example_app_template_pyproject_is_valid(example_dir: Path) -> None:
     pyproject = tomllib.loads((example_dir / "pyproject.toml").read_text())
 
-    assert pyproject["project"]["requires-python"] == ">=3.10"
+    assert pyproject["project"]["requires-python"].startswith(">=3.10")
     assert pyproject["project"]["dynamic"] == ["dependencies"]
     assert pyproject["tool"]["poetry"]["package-mode"] is False
     assert pyproject["tool"]["poetry"]["dependencies"]["audio-io"] == {
@@ -93,6 +93,19 @@ def test_rms_dbfs_reports_full_scale_and_silence_floor() -> None:
     levels = rms_dbfs(block)
 
     assert levels.tolist() == [0.0, -120.0]
+
+
+def test_level_meter_state_snapshots_latest_levels() -> None:
+    state = LevelMeterState(channels=(0, 1), sample_rate=48_000)
+
+    state.update(np.array([[1.0, 0.0], [-1.0, 0.0]], dtype=np.float32), info=None)
+    snapshot = state.snapshot()
+
+    assert snapshot["sequence"] == 1
+    assert snapshot["sample_rate"] == 48_000
+    assert snapshot["frames"] == 2
+    assert snapshot["channels"] == [0, 1]
+    assert snapshot["rms_dbfs"] == [0.0, -120.0]
 
 
 def test_dbfs_to_peak_converts_negative_dbfs() -> None:

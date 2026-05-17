@@ -49,8 +49,10 @@ For example, `--phase-degrees 90` starts the sine wave at the positive peak.
 poetry run audio-io-input-meter --interface 0 --channels 0
 ```
 
-The meter reports RMS level per selected channel. With the default float audio
-format, `0 dBFS` is full scale and quieter signals are negative values.
+The meter opens a native pywebview GUI and reports RMS level per selected
+channel. With the default float audio format, `0 dBFS` is full scale and quieter
+signals are negative values. The default `--block-words 256` keeps GUI updates
+responsive while leaving enough samples for stable RMS readings.
 
 On macOS, grant microphone permission to the terminal or IDE if the input meter
 does not receive samples.

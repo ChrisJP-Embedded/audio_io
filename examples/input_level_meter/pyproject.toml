@@ -2,7 +2,7 @@
 name = "audio-io-example-input-level-meter"
 version = "0.1.0"
 description = "Standalone app template for metering input level with audio-io."
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.14"
 dynamic = ["dependencies"]
 authors = [
   { name = "audio-io contributors" },
@@ -13,6 +13,8 @@ package-mode = false
 
 [tool.poetry.dependencies]
 audio-io = { path = "../..", develop = true }
+pythonnet = { version = ">=3.0.5,<4.0", markers = "sys_platform == 'win32'" }
+pywebview = ">=5.0"
 
 [project.scripts]
 run-example = "main:main"
