@@ -33,7 +33,7 @@ uPlot input meter visualization release.
 Included:
 
 - vendored uPlot assets for the input meter GUI
-- live waveform chart with selectable time window
+- webview analysis chart with selectable time window
 - display gain control for dB meters
 - buffered FFT chart below the waveform
 - batched binary waveform/FFT payloads from Python to JavaScript
@@ -82,10 +82,10 @@ Documentation and example alignment release.
 
 Included:
 
-- `examples/live_waveform_web/`
+- `examples/webview_analysis/`
 - `examples/README.md`
-- VS Code task for the live waveform web example
-- live waveform startup order now opens audio before serving/opening the browser
+- VS Code task for the webview analysis example
+- webview analysis startup order now opens audio before serving/opening the browser
 - docs and tests aligned with the full current example set
 
 ## 0.1.4

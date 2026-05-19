@@ -1,4 +1,4 @@
-"""Display live input waveform blocks in a local browser page."""
+"""Display live input analysis views in a local web page."""
 
 from __future__ import annotations
 
@@ -55,12 +55,33 @@ def rms_dbfs(block: np.ndarray, *, floor_db: float = -120.0) -> np.ndarray:
     return np.maximum(db, floor_db)
 
 
+def fft_dbfs(block: np.ndarray, *, bins: int = 48, floor_db: float = -120.0) -> np.ndarray:
+    """Return coarse per-channel FFT magnitudes in dBFS."""
+
+    if block.ndim != 2:
+        raise ValueError("block must be shaped as (frames, channels)")
+    if len(block) < 2:
+        return np.full((block.shape[1], bins), floor_db, dtype=np.float32)
+
+    window = np.hanning(len(block)).astype(np.float32)
+    windowed = block.astype(np.float32) * window[:, np.newaxis]
+    spectrum = np.abs(np.fft.rfft(windowed, axis=0))
+    scale = max(float(window.sum()) / 2.0, 1.0)
+    with np.errstate(divide="ignore"):
+        db = 20.0 * np.log10(spectrum / scale)
+    db = np.minimum(np.maximum(db, floor_db), 0.0)
+
+    bands = np.array_split(db[1:], bins)
+    values = [np.max(band, axis=0) if len(band) else np.full(block.shape[1], floor_db) for band in bands]
+    return np.stack(values, axis=1).astype(np.float32)
+
+
 HTML_PAGE = """<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>audio-io live waveform</title>
+  <title>audio-io webview analysis</title>
   <style>
     :root {
       color-scheme: dark;
@@ -72,14 +93,23 @@ HTML_PAGE = """<!doctype html>
       margin: 0;
       min-height: 100vh;
       display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    .app {
+      width: min(150mm, calc(100vw - 1rem));
+      height: min(100mm, calc(100vh - 1rem));
+      display: grid;
       grid-template-rows: auto 1fr;
+      border: 1px solid #30363a;
+      background: #101315;
     }
     header {
       display: flex;
-      gap: 1rem;
+      gap: 0.6rem;
       align-items: center;
       justify-content: space-between;
-      padding: 1rem 1.25rem;
+      padding: 0.55rem 0.7rem;
       border-bottom: 1px solid #30363a;
       background: #1c2023;
     }
@@ -92,7 +122,7 @@ HTML_PAGE = """<!doctype html>
     .controls {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.75rem 1rem;
+      gap: 0.45rem 0.65rem;
       align-items: center;
       justify-content: flex-end;
     }
@@ -103,7 +133,7 @@ HTML_PAGE = """<!doctype html>
       font-size: 0.78rem;
     }
     input[type="range"] {
-      width: 9rem;
+      width: 6.5rem;
       accent-color: #7bd88f;
     }
     .readout {
@@ -112,17 +142,20 @@ HTML_PAGE = """<!doctype html>
     }
     #stats {
       color: #c9c0b4;
-      font-size: 0.9rem;
+      font-size: 0.78rem;
       text-align: right;
     }
     main {
       min-height: 0;
-      padding: 1rem;
+      padding: 0.6rem;
+      display: grid;
+      grid-template-rows: minmax(0, 1.5fr) minmax(0, 1fr);
+      gap: 0.5rem;
     }
     canvas {
       width: 100%;
       height: 100%;
-      min-height: 420px;
+      min-height: 0;
       display: block;
       border: 1px solid #30363a;
       background: #0f1113;
@@ -130,26 +163,31 @@ HTML_PAGE = """<!doctype html>
   </style>
 </head>
 <body>
-  <header>
-    <h1>audio-io live waveform</h1>
-    <div class="controls">
-      <label>
-        Time <span class="readout" id="timeReadout">250 ms</span>
-        <input id="timeScale" type="range" min="50" max="5000" value="250" step="50">
-      </label>
-      <label>
-        Amplitude <span class="readout" id="ampReadout">1.0x</span>
-        <input id="amplitudeScale" type="range" min="0.25" max="8" value="1" step="0.25">
-      </label>
-      <div id="stats">waiting for audio...</div>
-    </div>
-  </header>
-  <main>
-    <canvas id="waveform"></canvas>
-  </main>
+  <div class="app">
+    <header>
+      <h1>audio-io webview analysis</h1>
+      <div class="controls">
+        <label>
+          Time <span class="readout" id="timeReadout">250 ms</span>
+          <input id="timeScale" type="range" min="50" max="5000" value="250" step="50">
+        </label>
+        <label>
+          Amplitude <span class="readout" id="ampReadout">1.0x</span>
+          <input id="amplitudeScale" type="range" min="0.25" max="8" value="1" step="0.25">
+        </label>
+        <div id="stats">waiting for audio...</div>
+      </div>
+    </header>
+    <main>
+      <canvas id="waveform"></canvas>
+      <canvas id="fft"></canvas>
+    </main>
+  </div>
   <script>
-    const canvas = document.querySelector("#waveform");
-    const ctx = canvas.getContext("2d");
+    const waveformCanvas = document.querySelector("#waveform");
+    const waveformCtx = waveformCanvas.getContext("2d");
+    const fftCanvas = document.querySelector("#fft");
+    const fftCtx = fftCanvas.getContext("2d");
     const stats = document.querySelector("#stats");
     const timeScale = document.querySelector("#timeScale");
     const amplitudeScale = document.querySelector("#amplitudeScale");
@@ -160,16 +198,16 @@ HTML_PAGE = """<!doctype html>
     let lastSequence = -1;
     let latestData = null;
 
-    function resizeCanvas() {
-      const rect = canvas.getBoundingClientRect();
+    function resizeCanvas(targetCanvas, targetCtx) {
+      const rect = targetCanvas.getBoundingClientRect();
       const scale = window.devicePixelRatio || 1;
       const width = Math.max(1, Math.floor(rect.width * scale));
       const height = Math.max(1, Math.floor(rect.height * scale));
-      if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width;
-        canvas.height = height;
+      if (targetCanvas.width !== width || targetCanvas.height !== height) {
+        targetCanvas.width = width;
+        targetCanvas.height = height;
       }
-      ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      targetCtx.setTransform(scale, 0, 0, scale, 0, 0);
       return { width: rect.width, height: rect.height };
     }
 
@@ -214,6 +252,7 @@ HTML_PAGE = """<!doctype html>
     }
 
     function drawGrid(width, height, lanes, seconds) {
+      const ctx = waveformCtx;
       ctx.strokeStyle = "#252b2f";
       ctx.lineWidth = 1;
       for (let i = 1; i < lanes; i += 1) {
@@ -237,7 +276,8 @@ HTML_PAGE = """<!doctype html>
     }
 
     function drawChart() {
-      const { width, height } = resizeCanvas();
+      const { width, height } = resizeCanvas(waveformCanvas, waveformCtx);
+      const ctx = waveformCtx;
       const channels = latestData?.channels || [];
       const rms = latestData?.rms_dbfs || [];
       const lanes = Math.max(1, channels.length);
@@ -284,12 +324,58 @@ HTML_PAGE = """<!doctype html>
       });
     }
 
+    function drawFftChart() {
+      const { width, height } = resizeCanvas(fftCanvas, fftCtx);
+      const ctx = fftCtx;
+      const channels = latestData?.channels || [];
+      const fft = latestData?.fft_dbfs || [];
+      const binCount = fft[0]?.length || 0;
+      ctx.clearRect(0, 0, width, height);
+
+      ctx.strokeStyle = "#252b2f";
+      ctx.lineWidth = 1;
+      for (let i = 1; i <= 3; i += 1) {
+        const y = (height / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+      ctx.fillStyle = "#8f989e";
+      ctx.font = "12px Segoe UI, system-ui, sans-serif";
+      ctx.fillText("FFT", 10, 18);
+      ctx.fillText("20 kHz", Math.max(10, width - 48), height - 10);
+
+      if (!channels.length || !binCount) {
+        ctx.fillText("waiting for spectrum", 48, 18);
+        return;
+      }
+
+      const gap = 1.5;
+      const groupWidth = width / binCount;
+      const barWidth = Math.max(1, (groupWidth - gap) / channels.length);
+      channels.forEach((channelName, channelIndex) => {
+        const values = fft[channelIndex] || [];
+        ctx.fillStyle = colors[channelIndex % colors.length];
+        values.forEach((db, index) => {
+          const normalized = Math.max(0, Math.min(1, (db + 90) / 90));
+          const barHeight = normalized * (height - 28);
+          const x = index * groupWidth + channelIndex * barWidth;
+          const y = height - barHeight - 1;
+          ctx.globalAlpha = 0.86;
+          ctx.fillRect(x, y, Math.max(1, barWidth - gap), barHeight);
+        });
+      });
+      ctx.globalAlpha = 1;
+    }
+
     async function refresh() {
       try {
         const response = await fetch("/waveform.json", { cache: "no-store" });
         const data = await response.json();
         appendSamples(data);
         drawChart();
+        drawFftChart();
         stats.textContent = `${data.frames} frames at ${data.sample_rate} Hz`;
       } catch (error) {
         stats.textContent = "server unavailable";
@@ -299,6 +385,7 @@ HTML_PAGE = """<!doctype html>
     function redraw() {
       updateReadouts();
       drawChart();
+      drawFftChart();
     }
 
     window.addEventListener("resize", redraw);
@@ -343,6 +430,7 @@ class WaveformState:
                 "frames": 0,
                 "samples": [],
                 "rms_dbfs": [],
+                "fft_dbfs": [],
             }
 
         if len(block) > self.max_points:
@@ -360,6 +448,7 @@ class WaveformState:
             "frames": int(len(block)),
             "samples": display_block.T.astype(float).tolist(),
             "rms_dbfs": rms_dbfs(block).astype(float).tolist(),
+            "fft_dbfs": fft_dbfs(block).astype(float).tolist(),
         }
 
 
@@ -390,18 +479,44 @@ def build_handler(state: WaveformState) -> type[BaseHTTPRequestHandler]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Show a live input waveform in a browser.")
+    parser = argparse.ArgumentParser(description="Show live input analysis in a compact webview.")
     parser.add_argument("--interface", default=None, help="Interface name substring or numeric device index.")
     parser.add_argument("--device", default=None, help="Deprecated alias for --interface.")
     parser.add_argument("--channels", default="0", help="Comma-separated zero-based input channels.")
     parser.add_argument("--sample-rate", type=int, default=48_000, help="Sample rate in Hz.")
     parser.add_argument("--block-words", type=int, default=1024, help="Frames per callback block.")
-    parser.add_argument("--host", default="127.0.0.1", help="HTTP host for the browser display.")
-    parser.add_argument("--port", type=int, default=8765, help="HTTP port for the browser display.")
+    parser.add_argument("--host", default="127.0.0.1", help="HTTP host for the analysis display.")
+    parser.add_argument("--port", type=int, default=8765, help="HTTP port for the analysis display.")
     parser.add_argument("--max-points", type=int, default=1200, help="Maximum samples drawn per channel.")
     parser.add_argument("--seconds", type=float, default=None, help="Run duration. Omit to run until Ctrl+C.")
-    parser.add_argument("--no-browser", action="store_true", help="Do not open the browser automatically.")
+    parser.add_argument("--no-browser", action="store_true", help="Do not open the webview or browser automatically.")
     return parser
+
+
+def wait_until_done(seconds: float | None, *, start: float) -> None:
+    while seconds is None or time.monotonic() - start < seconds:
+        time.sleep(0.25)
+
+
+def open_display(url: str, *, seconds: float | None, start: float) -> None:
+    try:
+        import webview
+    except ImportError:
+        webbrowser.open(url)
+        wait_until_done(seconds, start=start)
+        return
+
+    window = webview.create_window(
+        "audio-io webview analysis",
+        url=url,
+        width=620,
+        height=430,
+        min_size=(620, 430),
+        resizable=False,
+    )
+    if seconds is not None:
+        threading.Timer(seconds, window.destroy).start()
+    webview.start()
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -428,12 +543,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             server_thread = threading.Thread(target=server.serve_forever, daemon=True)
             url = f"http://{args.host}:{server.server_port}/"
             server_thread.start()
-            print(f"Serving live waveform at {url}")
-            if not args.no_browser:
-                webbrowser.open(url)
-
-            while args.seconds is None or time.monotonic() - start < args.seconds:
-                time.sleep(0.25)
+            print(f"Serving webview analysis at {url}")
+            if args.no_browser:
+                wait_until_done(args.seconds, start=start)
+            else:
+                open_display(url, seconds=args.seconds, start=start)
     except AudioIOConfigError as exc:
         return print_config_error(exc)
     except OSError as exc:

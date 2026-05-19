@@ -106,10 +106,10 @@ Show a GUI RMS input level meter with scalable waveform and FFT views on input c
 poetry run audio-io-input-meter --interface 0 --channels 0
 ```
 
-Show a live input waveform in your browser:
+Show live input analysis in a compact webview:
 
 ```powershell
-poetry run audio-io-live-waveform --interface 0 --channels 0
+poetry run audio-io-webview-analysis --interface 0 --channels 0
 ```
 
 Generate a known-level sine and verify the measured input level is present

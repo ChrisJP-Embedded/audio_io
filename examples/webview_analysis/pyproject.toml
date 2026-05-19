@@ -1,7 +1,7 @@
 [project]
-name = "audio-io-example-live-waveform-web"
+name = "audio-io-example-webview-analysis"
 version = "0.1.0"
-description = "Standalone app template for viewing live input waveforms with audio-io."
+description = "Standalone app template for viewing live input analysis with audio-io."
 requires-python = ">=3.10"
 dynamic = ["dependencies"]
 authors = [

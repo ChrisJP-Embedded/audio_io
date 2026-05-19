@@ -34,7 +34,7 @@ packages = [
 audio-io-list-devices = "examples.list_devices.main:main"
 audio-io-sine-output = "examples.sine_output.main:main"
 audio-io-input-meter = "examples.input_level_meter.main:main"
-audio-io-live-waveform = "examples.live_waveform_web.main:main"
+audio-io-webview-analysis = "examples.webview_analysis.main:main"
 audio-io-loopback-check = "examples.loopback_sine_level_check.main:main"
 
 [tool.pytest.ini_options]

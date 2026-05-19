@@ -80,10 +80,10 @@ uPlot waveform with integrated X/Y chart scaling, and a buffered FFT chart for
 each selected input channel. With the default float format, `0 dBFS` is full
 scale and quieter signals are negative.
 
-## View a Live Waveform
+## View Webview Analysis
 
 ```powershell
-poetry run audio-io-live-waveform --interface 0 --channels 0
+poetry run audio-io-webview-analysis --interface 0 --channels 0
 ```
 
 This starts a local web display at `http://127.0.0.1:8765/` and opens it in your

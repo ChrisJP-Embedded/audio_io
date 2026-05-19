@@ -8,12 +8,12 @@ import numpy as np
 import pytest
 
 import examples.input_level_meter.main as input_level_meter
-import examples.live_waveform_web.main as live_waveform_web
+import examples.webview_analysis.main as webview_analysis
 import examples.loopback_sine_level_check.main as loopback_sine_level_check
 import examples.sine_output.main as sine_output
 from audio_io import InvalidChannelRequestError
 from examples.input_level_meter.main import LevelMeterState, _decimate_for_display, _fft_dbfs, rms_dbfs
-from examples.live_waveform_web.main import WaveformState
+from examples.webview_analysis.main import WaveformState, fft_dbfs
 from examples.loopback_sine_level_check.main import dbfs_to_peak, estimate_sine_peak_dbfs, levels_within_tolerance
 from examples.sine_output.main import SineGenerator, parse_channels
 
@@ -22,7 +22,7 @@ EXAMPLE_DIRS = [
     Path("examples/list_devices"),
     Path("examples/sine_output"),
     Path("examples/input_level_meter"),
-    Path("examples/live_waveform_web"),
+    Path("examples/webview_analysis"),
     Path("examples/loopback_sine_level_check"),
 ]
 
@@ -93,6 +93,15 @@ def test_rms_dbfs_reports_full_scale_and_silence_floor() -> None:
     levels = rms_dbfs(block)
 
     assert levels.tolist() == [0.0, -120.0]
+
+
+def test_fft_dbfs_returns_channel_bands() -> None:
+    block = np.ones((8, 2), dtype=np.float32)
+
+    spectrum = fft_dbfs(block, bins=4)
+
+    assert spectrum.shape == (2, 4)
+    assert np.all(spectrum <= 0.0)
 
 
 def test_level_meter_state_snapshots_latest_levels() -> None:
@@ -193,6 +202,8 @@ def test_waveform_state_snapshots_latest_block() -> None:
     assert snapshot["display_sample_rate"] == 32_000
     assert snapshot["samples"] == [[0.0, 0.0], [0.5, 0.25]]
     assert len(snapshot["rms_dbfs"]) == 2
+    assert len(snapshot["fft_dbfs"]) == 2
+    assert len(snapshot["fft_dbfs"][0]) == 48
 
 
 class RaisingSession:
@@ -228,7 +239,7 @@ class RaisingSession:
             ],
         ),
         (
-            live_waveform_web,
+            webview_analysis,
             ["--interface", "Output Only", "--channels", "2", "--seconds", "0", "--no-browser"],
         ),
     ],

@@ -61,17 +61,18 @@ for stable RMS readings.
 On macOS, grant microphone permission to the terminal or IDE if the input meter
 does not receive samples.
 
-## View a Live Waveform in a Browser
+## View Web Analysis in a Browser
 
 ```powershell
-poetry run audio-io-live-waveform --interface 0 --channels 0
+poetry run audio-io-webview-analysis --interface 0 --channels 0
 ```
 
-The waveform example starts a small local HTTP server at
-`http://127.0.0.1:8765/` and draws the latest input callback block onto a canvas.
-The browser view includes time and amplitude controls for scaling the rolling
-line chart. Use `--no-browser` if you want to open the URL yourself, or `--port`
-to choose a different local port.
+The webview analysis example starts a small local HTTP server at
+`http://127.0.0.1:8765/`, opens a compact fixed-size pywebview window, and draws
+the latest input callback block as a rolling waveform with a live FFT bar chart
+below it. The view includes time and amplitude controls for scaling the line
+chart. Use `--no-browser` if you want to open the URL yourself, or `--port` to
+choose a different local port.
 
 ## Check Loopback Sine Level
 
@@ -172,7 +173,7 @@ The repo includes `.vscode/tasks.json` with:
 - `example: list devices`
 - `example: 1000 Hz sine output`
 - `example: input dB meter`
-- `example: live waveform web`
+- `example: webview analysis`
 - `example: loopback sine level check`
 - `test: pytest`
 - `clean: python caches`
