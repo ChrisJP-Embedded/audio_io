@@ -21,6 +21,8 @@ for runnable example scripts, and [VERSION.md](VERSION.md) for release notes.
 poetry install
 ```
 
+Or use the VS Code task `setup: poetry env`.
+
 Run commands inside the Poetry environment:
 
 ```powershell

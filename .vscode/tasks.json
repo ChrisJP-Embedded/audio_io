@@ -2,6 +2,16 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "setup: poetry env",
+      "type": "shell",
+      "command": "poetry",
+      "args": [
+        "install"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
       "label": "example: list devices",
       "type": "shell",
       "command": "poetry",
@@ -51,12 +61,12 @@
       "problemMatcher": []
     },
     {
-      "label": "example: live waveform web",
+      "label": "example: webview analysis",
       "type": "shell",
       "command": "poetry",
       "args": [
         "run",
-        "audio-io-live-waveform",
+        "audio-io-webview-analysis",
         "--interface",
         "${input:inputInterface}",
         "--channels",

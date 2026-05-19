@@ -1,8 +1,19 @@
 # Version
 
-Current package version: `0.1.11`
+Current package version: `0.1.12`
 
 The source of truth for the package version is `pyproject.toml`.
+
+## 0.1.12
+
+VS Code task alignment release.
+
+Included:
+
+- root `setup: poetry env` task for installing the Poetry environment
+- root webview analysis task now uses the current `audio-io-webview-analysis` script
+- documentation updates for the Poetry setup task
+- regression test to keep root VS Code task commands aligned with console scripts
 
 ## 0.1.11
 

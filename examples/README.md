@@ -8,6 +8,9 @@ poetry install
 poetry run audio-io-list-devices
 ```
 
+The root VS Code workspace also has a `setup: poetry env` task for the Poetry
+install step, plus tasks for each runnable example.
+
 Each example lives in its own directory with a local `README.md`. The folders
 are intended to be easy starting points for a new app: copy the folder, keep the
 root `pyproject.toml` dependency set or add `audio-io` plus the same runtime

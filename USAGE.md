@@ -10,6 +10,9 @@ PortAudio.
 poetry install
 ```
 
+In VS Code, the root workspace also includes `setup: poetry env`, which runs
+the same Poetry install step.
+
 Run commands inside the Poetry environment:
 
 ```powershell
@@ -170,6 +173,7 @@ The example applications catch these configuration errors and return exit code
 
 The repo includes `.vscode/tasks.json` with:
 
+- `setup: poetry env`
 - `example: list devices`
 - `example: 1000 Hz sine output`
 - `example: input dB meter`

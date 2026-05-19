@@ -25,6 +25,7 @@ EXAMPLE_DIRS = [
     Path("examples/webview_analysis"),
     Path("examples/loopback_sine_level_check"),
 ]
+ROOT_TASKS = Path(".vscode/tasks.json")
 
 
 def test_parse_channels() -> None:
@@ -60,6 +61,29 @@ def test_example_vscode_tasks_include_clean_install_and_run(example_dir: Path) -
     labels = {task["label"] for task in tasks}
 
     assert {"clean: python caches", "install: poetry env", "run: example app"} <= labels
+
+
+def test_root_vscode_tasks_include_setup_and_current_examples() -> None:
+    tasks = json.loads(ROOT_TASKS.read_text())["tasks"]
+    labels = {task["label"] for task in tasks}
+    commands = {
+        arg
+        for task in tasks
+        for arg in task.get("args", [])
+        if isinstance(arg, str) and arg.startswith("audio-io-")
+    }
+
+    assert {
+        "setup: poetry env",
+        "example: list devices",
+        "example: 1000 Hz sine output",
+        "example: input dB meter",
+        "example: webview analysis",
+        "example: loopback sine level check",
+        "test: pytest",
+        "clean: python caches",
+    } <= labels
+    assert commands <= set(tomllib.loads(Path("pyproject.toml").read_text())["project"]["scripts"])
 
 
 def test_sine_generator_outputs_expected_shape_and_amplitude() -> None:
