@@ -10,8 +10,14 @@ PortAudio.
 poetry install
 ```
 
-In VS Code, the root workspace also includes `setup: poetry env`, which runs
-the same Poetry install step.
+In VS Code, the root workspace also includes `setup: poetry env`, which installs
+the repo development environment with GUI example support.
+
+Install the GUI extra before running pywebview examples in a new environment:
+
+```powershell
+poetry install --extras gui
+```
 
 Run commands inside the Poetry environment:
 
@@ -126,6 +132,30 @@ with AudioIOSession(config, input_callback=on_input, output_callback=on_output):
 
 Returning `None` from an output callback renders silence for that block.
 
+Exceptions raised by input or output callbacks are caught inside the session
+callback boundary. `session.last_error` stores the latest exception. Output
+callback failures render silence for the failing block, and the session
+schedules up to `callback_restart_attempts` delayed stream restarts, with
+`callback_restart_delay_seconds` between attempts. Set
+`callback_restart_attempts=0` for no automatic restart attempts.
+
+Use `config.timing_status` to inspect the requested sample-rate/block-size
+timing before opening a stream:
+
+```python
+print(config.timing_status.console_line())
+```
+
+Example output:
+
+```text
+Audio timing: fs=192000 Hz, 1/fs=5.208 us, block=256 frames (1.333 ms), callbacks=750.0/s, status=warning - higher glitch risk; consider a larger block
+```
+
+The status is based on callback rate. `good` is comfortable, `caution` means
+callbacks should stay lightweight, `warning` indicates higher glitch risk, and
+`high-risk` means the request is likely fragile in Python callbacks.
+
 ## Use Queues
 
 ```python
@@ -168,6 +198,12 @@ invalid` or `output channel request invalid`.
 
 The example applications catch these configuration errors and return exit code
 `1` after printing a short `error:` message.
+
+## API Stability
+
+`audio-io` is pre-1.0. The core `AudioIOConfig`, `AudioIOSession`, backend, and
+exception APIs are intended to remain steady across normal `0.1.x` patch
+releases. Larger API changes should be called out in `VERSION.md`.
 
 ## VS Code Tasks
 

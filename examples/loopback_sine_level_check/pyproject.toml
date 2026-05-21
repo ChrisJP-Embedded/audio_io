@@ -2,7 +2,7 @@
 name = "audio-io-example-loopback-sine-level-check"
 version = "0.1.0"
 description = "Standalone app template for checking loopback sine level with audio-io."
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.14"
 dynamic = ["dependencies"]
 authors = [
   { name = "audio-io contributors" },

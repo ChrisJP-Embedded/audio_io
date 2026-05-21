@@ -38,7 +38,10 @@ def parse_channels(value: str) -> tuple[int, ...]:
 
     if not value.strip():
         return ()
-    return tuple(int(part.strip()) for part in value.split(","))
+    try:
+        return tuple(int(part.strip()) for part in value.split(","))
+    except ValueError as exc:
+        raise ValueError(f"channels must be comma-separated integers, got {value!r}") from exc
 
 
 class SineGenerator:
@@ -123,25 +126,29 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    interface = int(args.interface) if args.interface.isdigit() else args.interface
-    input_channels = parse_channels(args.input_channels)
-    output_channels = parse_channels(args.output_channels)
-    amplitude = dbfs_to_peak(args.sine_dbfs)
-    config = AudioIOConfig(
-        interface=interface,
-        input_channels=input_channels,
-        output_channels=output_channels,
-        sample_rate=args.sample_rate,
-        block_words=args.block_words,
-    )
-    generator = SineGenerator(
-        frequency_hz=args.frequency,
-        sample_rate=args.sample_rate,
-        channels=config.output_channel_count,
-        amplitude=amplitude,
-        phase_degrees=args.phase_degrees,
-    )
+    try:
+        interface = int(args.interface) if args.interface.isdigit() else args.interface
+        input_channels = parse_channels(args.input_channels)
+        output_channels = parse_channels(args.output_channels)
+        amplitude = dbfs_to_peak(args.sine_dbfs)
+        config = AudioIOConfig(
+            interface=interface,
+            input_channels=input_channels,
+            output_channels=output_channels,
+            sample_rate=args.sample_rate,
+            block_words=args.block_words,
+        )
+        generator = SineGenerator(
+            frequency_hz=args.frequency,
+            sample_rate=args.sample_rate,
+            channels=config.output_channel_count,
+            amplitude=amplitude,
+            phase_degrees=args.phase_degrees,
+        )
+    except ValueError as exc:
+        return print_config_error(exc)
 
+    print(config.timing_status.console_line())
     print(
         f"Generating {args.frequency:g} Hz at {args.sine_dbfs:g} dBFS peak "
         f"on output channels {output_channels}; measuring input channels {input_channels}."

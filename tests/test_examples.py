@@ -44,8 +44,9 @@ def test_example_app_template_files_exist(example_dir: Path) -> None:
 @pytest.mark.parametrize("example_dir", EXAMPLE_DIRS)
 def test_example_app_template_pyproject_is_valid(example_dir: Path) -> None:
     pyproject = tomllib.loads((example_dir / "pyproject.toml").read_text())
+    root_pyproject = tomllib.loads(Path("pyproject.toml").read_text())
 
-    assert pyproject["project"]["requires-python"].startswith(">=3.10")
+    assert pyproject["project"]["requires-python"] == root_pyproject["project"]["requires-python"]
     assert pyproject["project"]["dynamic"] == ["dependencies"]
     assert pyproject["tool"]["poetry"]["package-mode"] is False
     assert pyproject["tool"]["poetry"]["dependencies"]["audio-io"] == {
@@ -72,6 +73,7 @@ def test_root_vscode_tasks_include_setup_and_current_examples() -> None:
         for arg in task.get("args", [])
         if isinstance(arg, str) and arg.startswith("audio-io-")
     }
+    setup_task = next(task for task in tasks if task["label"] == "setup: poetry env")
 
     assert {
         "setup: poetry env",
@@ -84,6 +86,14 @@ def test_root_vscode_tasks_include_setup_and_current_examples() -> None:
         "clean: python caches",
     } <= labels
     assert commands <= set(tomllib.loads(Path("pyproject.toml").read_text())["project"]["scripts"])
+    assert setup_task["args"] == ["install", "--extras", "gui"]
+
+
+def test_gui_dependencies_are_optional() -> None:
+    pyproject = tomllib.loads(Path("pyproject.toml").read_text())
+
+    assert not any("pywebview" in dependency for dependency in pyproject["project"]["dependencies"])
+    assert any("pywebview" in dependency for dependency in pyproject["project"]["optional-dependencies"]["gui"])
 
 
 def test_sine_generator_outputs_expected_shape_and_amplitude() -> None:
@@ -277,3 +287,47 @@ def test_examples_print_config_errors_without_traceback(monkeypatch, capsys, mod
     assert exit_code == 1
     assert "input channel request invalid for input channel list [2]" in captured.err
     assert "Traceback" not in captured.err
+
+
+def test_example_parse_errors_do_not_print_tracebacks(capsys) -> None:
+    exit_code = sine_output.main(["--interface", "0", "--channels", "left"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "channels must be comma-separated integers" in captured.err
+    assert "Traceback" not in captured.err
+
+
+class NoopSession:
+    def __init__(self, config, **kwargs):
+        self.config = config
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return None
+
+
+def test_sine_output_prints_audio_timing_status(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(sine_output, "AudioIOSession", NoopSession)
+
+    exit_code = sine_output.main(
+        [
+            "--interface",
+            "0",
+            "--channels",
+            "0",
+            "--sample-rate",
+            "192000",
+            "--block-words",
+            "256",
+            "--seconds",
+            "0",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "Audio timing: fs=192000 Hz, 1/fs=5.208 us" in captured.out
+    assert "callbacks=750.0/s, status=warning" in captured.out

@@ -21,7 +21,15 @@ for runnable example scripts, and [VERSION.md](VERSION.md) for release notes.
 poetry install
 ```
 
-Or use the VS Code task `setup: poetry env`.
+Or use the VS Code task `setup: poetry env` to install the repo development
+environment with GUI example support.
+
+The core package only installs the audio runtime dependencies. Install the GUI
+extra before running pywebview examples from a fresh environment:
+
+```powershell
+poetry install --extras gui
+```
 
 Run commands inside the Poetry environment:
 
@@ -52,6 +60,18 @@ config = AudioIOConfig(
 with AudioIOSession(config, input_callback=on_input, output_callback=on_output) as session:
     input_devices = session.is_active
 ```
+
+Exceptions raised by user callbacks are contained at the audio callback
+boundary. The session stores the latest exception on `session.last_error`,
+renders silence for an output callback failure, and by default schedules up to
+three delayed stream restarts. Use `callback_restart_attempts=0` to disable
+automatic restarts, or tune `callback_restart_delay_seconds` for slower device
+recovery.
+
+`AudioIOConfig.timing_status` reports derived timing for the requested sample
+rate and block size, including `1/fs`, block duration, callback rate, and a
+simple status. The runnable examples print the same status line at startup, so
+high callback-rate requests are visible before playback or capture begins.
 
 Channel selections are zero-based and compacted for the caller. For example,
 `output_channels=[0, 2]` lets the caller write two-column output blocks; the
@@ -137,3 +157,7 @@ positive peak.
 The examples run through the same package API on Windows and macOS. On macOS,
 you may need to grant microphone permission to the terminal or IDE before input
 metering can receive samples.
+
+`audio-io` is still pre-1.0. The core session/config/backend API is intended to
+stay steady across normal `0.1.x` patch releases, while larger API changes
+should be called out in [VERSION.md](VERSION.md).

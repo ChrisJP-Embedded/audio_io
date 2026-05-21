@@ -473,7 +473,10 @@ def parse_channels(value: str) -> tuple[int, ...]:
 
     if not value.strip():
         return ()
-    return tuple(int(part.strip()) for part in value.split(","))
+    try:
+        return tuple(int(part.strip()) for part in value.split(","))
+    except ValueError as exc:
+        raise ValueError(f"channels must be comma-separated integers, got {value!r}") from exc
 
 
 def rms_dbfs(block: np.ndarray, *, floor_db: float = -120.0) -> np.ndarray:
@@ -624,31 +627,38 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-    input_channels = parse_channels(args.channels)
-    interface_arg = args.interface if args.interface is not None else args.device
-    if interface_arg is None:
-        build_parser().error("--interface is required")
-    interface = int(interface_arg) if interface_arg and interface_arg.isdigit() else interface_arg
-    config = AudioIOConfig(
-        interface=interface,
-        input_channels=input_channels,
-        sample_rate=args.sample_rate,
-        block_words=args.block_words,
-    )
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    try:
+        input_channels = parse_channels(args.channels)
+        interface_arg = args.interface if args.interface is not None else args.device
+        if interface_arg is None:
+            parser.error("--interface is required")
+        interface = int(interface_arg) if interface_arg and interface_arg.isdigit() else interface_arg
+        config = AudioIOConfig(
+            interface=interface,
+            input_channels=input_channels,
+            sample_rate=args.sample_rate,
+            block_words=args.block_words,
+        )
 
-    state = LevelMeterState(
-        channels=input_channels,
-        sample_rate=args.sample_rate,
-        history_seconds=args.history_seconds,
-        fft_size=args.fft_size,
-    )
+        state = LevelMeterState(
+            channels=input_channels,
+            sample_rate=args.sample_rate,
+            history_seconds=args.history_seconds,
+            fft_size=args.fft_size,
+        )
+    except ValueError as exc:
+        return print_config_error(exc)
+    print(config.timing_status.console_line())
     try:
         with AudioIOSession(config, input_callback=state.update):
             try:
                 import webview
             except ImportError as exc:
-                raise RuntimeError("pywebview is required for the GUI input meter. Run poetry install.") from exc
+                raise RuntimeError(
+                    "pywebview is required for the GUI input meter. Run poetry install --extras gui."
+                ) from exc
 
             window = webview.create_window(
                 "audio-io input meter",

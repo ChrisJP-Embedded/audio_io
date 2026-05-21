@@ -1,8 +1,24 @@
 # Version
 
-Current package version: `0.1.12`
+Current package version: `0.1.13`
 
 The source of truth for the package version is `pyproject.toml`.
+
+## 0.1.13
+
+Parent project readiness release.
+
+Included:
+
+- GUI dependencies moved behind the `gui` optional dependency extra
+- runtime validation for supported audio sample dtypes
+- callback exceptions are contained, recorded on `AudioIOSession.last_error`,
+  and can trigger bounded delayed stream restart attempts
+- example CLIs now print one-line parse/config errors for invalid channel text
+- per-example Python version ranges aligned with the root package
+- root VS Code setup task now installs the GUI extra for example app workflows
+- `AudioIOConfig.timing_status` reports `1/fs`, block duration, callback rate,
+  and a callback-load status; examples print it before opening streams
 
 ## 0.1.12
 

@@ -20,5 +20,5 @@ def print_config_error(exc: Exception) -> int:
 
 def print_runtime_error(exc: RuntimeError) -> int:
     print(f"error: {exc}", file=sys.stderr)
-    print("hint: run poetry install from the repo root, then use poetry run", file=sys.stderr)
+    print("hint: run poetry install from the repo root, or poetry install --extras gui for GUI examples", file=sys.stderr)
     return 1

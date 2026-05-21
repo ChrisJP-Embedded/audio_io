@@ -8,8 +8,15 @@ poetry install
 poetry run audio-io-list-devices
 ```
 
-The root VS Code workspace also has a `setup: poetry env` task for the Poetry
-install step, plus tasks for each runnable example.
+The root VS Code workspace also has a `setup: poetry env` task that installs
+the GUI extra for example app workflows, plus tasks for each runnable example.
+
+The GUI examples use the optional GUI dependency group. In a fresh root
+environment, install it with:
+
+```powershell
+poetry install --extras gui
+```
 
 Each example lives in its own directory with a local `README.md`. The folders
 are intended to be easy starting points for a new app: copy the folder, keep the
@@ -43,6 +50,10 @@ elsewhere, update that dependency to point at your local checkout or a published
 Use [list_devices](list_devices/README.md) first to find the interface index or name to
 pass to the other examples. Interface names can be exact names, substrings, or
 numeric device indices.
+
+Examples that open streams print the requested audio timing before startup,
+including `1/fs`, block duration, callbacks per second, and a status such as
+`good`, `caution`, `warning`, or `high-risk`.
 
 ## List Devices
 

@@ -38,7 +38,10 @@ def parse_channels(value: str) -> tuple[int, ...]:
 
     if not value.strip():
         return ()
-    return tuple(int(part.strip()) for part in value.split(","))
+    try:
+        return tuple(int(part.strip()) for part in value.split(","))
+    except ValueError as exc:
+        raise ValueError(f"channels must be comma-separated integers, got {value!r}") from exc
 
 
 class SineGenerator:
@@ -84,27 +87,32 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-    output_channels = parse_channels(args.channels)
-    interface_arg = args.interface if args.interface is not None else args.device
-    if interface_arg is None:
-        build_parser().error("--interface is required")
-    interface = int(interface_arg) if interface_arg and interface_arg.isdigit() else interface_arg
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    try:
+        output_channels = parse_channels(args.channels)
+        interface_arg = args.interface if args.interface is not None else args.device
+        if interface_arg is None:
+            parser.error("--interface is required")
+        interface = int(interface_arg) if interface_arg and interface_arg.isdigit() else interface_arg
 
-    config = AudioIOConfig(
-        interface=interface,
-        output_channels=output_channels,
-        sample_rate=args.sample_rate,
-        block_words=args.block_words,
-    )
-    generator = SineGenerator(
-        frequency_hz=args.frequency,
-        sample_rate=args.sample_rate,
-        channels=config.output_channel_count,
-        amplitude=args.amplitude,
-        phase_degrees=args.phase_degrees,
-    )
+        config = AudioIOConfig(
+            interface=interface,
+            output_channels=output_channels,
+            sample_rate=args.sample_rate,
+            block_words=args.block_words,
+        )
+        generator = SineGenerator(
+            frequency_hz=args.frequency,
+            sample_rate=args.sample_rate,
+            channels=config.output_channel_count,
+            amplitude=args.amplitude,
+            phase_degrees=args.phase_degrees,
+        )
+    except ValueError as exc:
+        return print_config_error(exc)
 
+    print(config.timing_status.console_line())
     print(
         f"Playing {args.frequency:g} Hz at {args.phase_degrees:g} degrees "
         f"on channels {output_channels}. Press Ctrl+C to stop."

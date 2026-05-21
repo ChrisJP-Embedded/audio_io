@@ -6,7 +6,9 @@
       "type": "shell",
       "command": "poetry",
       "args": [
-        "install"
+        "install",
+        "--extras",
+        "gui"
       ],
       "group": "build",
       "problemMatcher": []

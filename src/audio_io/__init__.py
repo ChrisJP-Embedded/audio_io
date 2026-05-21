@@ -9,13 +9,14 @@ from audio_io.backends import (
     SoundDeviceBackend,
     list_devices,
 )
-from audio_io.config import AudioIOConfig
+from audio_io.config import AudioIOConfig, AudioTimingStatus
 from audio_io.session import AudioIOSession, BlockInfo
 
 __all__ = [
     "AudioBackend",
     "AudioIOConfigError",
     "AudioIOConfig",
+    "AudioTimingStatus",
     "AudioIOSession",
     "BlockInfo",
     "DeviceInfo",
